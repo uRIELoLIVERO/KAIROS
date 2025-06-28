@@ -1,0 +1,120 @@
+{
+    "usuarios": [
+        {
+            "id": "u1",
+            "nombre": "Sofía Martínez",
+            "email": "sofia@tatuadora.com",
+            "passwordHash": "$2b$10$hashedpassword1",
+            "rol": "PROFESIONAL"
+        },
+        {
+            "id": "u2",
+            "nombre": "Marcos Gómez",
+            "email": "marcos@gmail.com",
+            "passwordHash": "$2b$10$hashedpassword2",
+            "rol": "CLIENTE"
+        }
+    ],
+    "empresa": {
+        "id": "e1",
+        "nombre": "Estudio de Tatuajes InkHouse",
+        "direccion": "Av. Mitre 123, Córdoba",
+        "email": "contacto@inkhouse.com",
+        "telefono": "3511234567",
+        "disponibilidad": {
+            "id": "d1",
+            "entidad": "EMPRESA",
+            "dias": [
+                {
+                    "diaSemana": 1,
+                    "franjas": [
+                        {
+                            "inicio": "12:00",
+                            "fin": "00:00"
+                        }
+                    ]
+                },
+                {
+                    "diaSemana": 2,
+                    "franjas": [
+                        {
+                            "inicio": "12:00",
+                            "fin": "00:00"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "profesional": {
+        "id": "p1",
+        "usuarioId": "u1",
+        "empresaId": "e1",
+        "especialidades": [
+            "blackout",
+            "realismo"
+        ],
+        "disponibilidad": {
+            "id": "d2",
+            "entidad": "PROFESIONAL",
+            "dias": [
+                {
+                    "diaSemana": 1,
+                    "franjas": [
+                        {
+                            "inicio": "14:00",
+                            "fin": "20:00"
+                        }
+                    ]
+                },
+                {
+                    "diaSemana": 3,
+                    "franjas": [
+                        {
+                            "inicio": "15:00",
+                            "fin": "19:00"
+                        }
+                    ]
+                }
+            ]
+        },
+        "excepciones": [
+            {
+                "id": "ex1",
+                "fecha": "2025-07-03",
+                "disponible": false,
+                "motivo": "Vacaciones"
+            }
+        ]
+    },
+    "cliente": {
+        "id": "c1",
+        "usuarioId": "u2",
+        "telefono": "3519876543"
+    },
+    "servicio": {
+        "id": "s1",
+        "empresaId": "e1",
+        "nombre": "Tatuaje Blackout",
+        "descripcion": "Cobertura negra completa sobre zonas amplias",
+        "duracionSugerida": 90,
+        "precioSugerido": 40000
+    },
+    "servicioOfrecido": {
+        "id": "so1",
+        "profesionalId": "p1",
+        "servicioId": "s1",
+        "duracionPersonalizada": 100,
+        "precioPersonalizado": 45000,
+        "descripcionPersonalizada": "Blackout con detalles geométricos"
+    },
+    "turno": {
+        "id": "t1",
+        "clienteId": "c1",
+        "servicioOfrecidoId": "so1",
+        "fecha": "2025-07-03",
+        "horaInicio": "14:00",
+        "estado": "RESERVADO",
+        "comentario": "Zona: brazo completo"
+    }
+}
