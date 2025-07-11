@@ -1,120 +1,386 @@
 {
-    "usuarios": [
+    "users": [
         {
             "id": "u1",
-            "nombre": "Sofía Martínez",
+            "name": "Sofía Martínez",
             "email": "sofia@tatuadora.com",
             "passwordHash": "$2b$10$hashedpassword1",
-            "rol": "PROFESIONAL"
+            "role": "PROFESSIONAL"
         },
         {
             "id": "u2",
-            "nombre": "Marcos Gómez",
+            "name": "Marcos Gómez",
             "email": "marcos@gmail.com",
             "passwordHash": "$2b$10$hashedpassword2",
-            "rol": "CLIENTE"
+            "role": "CLIENT"
         }
     ],
-    "empresa": {
+    "company": {
         "id": "e1",
-        "nombre": "Estudio de Tatuajes InkHouse",
-        "direccion": "Av. Mitre 123, Córdoba",
-        "email": "contacto@inkhouse.com",
-        "telefono": "3511234567",
-        "disponibilidad": {
+        "name": "InkHouse Tattoo Studio",
+        "address": "123 Mitre Ave, Córdoba",
+        "email": "contact@inkhouse.com",
+        "phone": "3511234567",
+        "availability": {
             "id": "d1",
-            "entidad": "EMPRESA",
-            "dias": [
+            "entity": "COMPANY",
+            "days": [
                 {
-                    "diaSemana": 1,
-                    "franjas": [
+                    "dayOfWeek": 1,
+                    "slots": [
                         {
-                            "inicio": "12:00",
-                            "fin": "00:00"
+                            "start": "12:00",
+                            "end": "00:00"
                         }
                     ]
                 },
                 {
-                    "diaSemana": 2,
-                    "franjas": [
+                    "dayOfWeek": 2,
+                    "slots": [
                         {
-                            "inicio": "12:00",
-                            "fin": "00:00"
+                            "start": "12:00",
+                            "end": "00:00"
                         }
                     ]
                 }
             ]
         }
     },
-    "profesional": {
+    "professional": {
         "id": "p1",
-        "usuarioId": "u1",
-        "empresaId": "e1",
-        "especialidades": [
+        "userId": "u1",
+        "companyId": "e1",
+        "specialties": [
             "blackout",
-            "realismo"
+            "realism"
         ],
-        "disponibilidad": {
+        "availability": {
             "id": "d2",
-            "entidad": "PROFESIONAL",
-            "dias": [
+            "entity": "PROFESSIONAL",
+            "days": [
                 {
-                    "diaSemana": 1,
-                    "franjas": [
+                    "dayOfWeek": 1,
+                    "slots": [
                         {
-                            "inicio": "14:00",
-                            "fin": "20:00"
+                            "start": "14:00",
+                            "end": "20:00"
                         }
                     ]
                 },
                 {
-                    "diaSemana": 3,
-                    "franjas": [
+                    "dayOfWeek": 3,
+                    "slots": [
                         {
-                            "inicio": "15:00",
-                            "fin": "19:00"
+                            "start": "15:00",
+                            "end": "19:00"
                         }
                     ]
                 }
             ]
         },
-        "excepciones": [
+        "exceptions": [
             {
                 "id": "ex1",
-                "fecha": "2025-07-03",
-                "disponible": false,
-                "motivo": "Vacaciones"
+                "date": "2025-07-03",
+                "available": false,
+                "reason": "Vacation"
             }
         ]
     },
-    "cliente": {
+    "client": {
         "id": "c1",
-        "usuarioId": "u2",
-        "telefono": "3519876543"
+        "userId": "u2",
+        "phone": "3519876543"
     },
-    "servicio": {
+    "service": {
         "id": "s1",
-        "empresaId": "e1",
-        "nombre": "Tatuaje Blackout",
-        "descripcion": "Cobertura negra completa sobre zonas amplias",
-        "duracionSugerida": 90,
-        "precioSugerido": 40000
+        "companyId": "e1",
+        "name": "Blackout Tattoo",
+        "description": "Full black coverage over large areas",
+        "suggestedDuration": 90,
+        "suggestedPrice": 40000
     },
-    "servicioOfrecido": {
-        "id": "so1",
-        "profesionalId": "p1",
-        "servicioId": "s1",
-        "duracionPersonalizada": 100,
-        "precioPersonalizado": 45000,
-        "descripcionPersonalizada": "Blackout con detalles geométricos"
+    "offeredService": {
+        "id": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+        "professionalId": "p1",
+        "serviceId": "s1",
+        "customDuration": 100,
+        "customPrice": 45000,
+        "customDescription": "Blackout with geometric details"
     },
-    "turno": {
-        "id": "t1",
-        "clienteId": "c1",
-        "servicioOfrecidoId": "so1",
-        "fecha": "2025-07-03",
-        "horaInicio": "14:00",
-        "estado": "RESERVADO",
-        "comentario": "Zona: brazo completo"
-    }
+    "appointment": [
+        {
+            "id": "a1",
+            "creationDateTime": "2025-07-01T12:00:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-07-01T14:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a2",
+            "creationDateTime": "2025-07-02T10:30:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-07-02T15:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a3",
+            "creationDateTime": "2025-07-03T09:45:00.000Z",
+            "status": "CANCELLED",
+            "appoinmentDateTime": "2025-07-03T17:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a4",
+            "creationDateTime": "2025-07-04T13:20:00.000Z",
+            "status": "COMPLETED",
+            "appoinmentDateTime": "2025-07-04T16:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a5",
+            "creationDateTime": "2025-07-05T11:10:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-07-05T14:30:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a6",
+            "creationDateTime": "2025-07-06T15:00:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-07-07T13:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a7",
+            "creationDateTime": "2025-07-08T14:00:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-07-09T14:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a8",
+            "creationDateTime": "2025-07-10T12:10:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-07-10T18:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a9",
+            "creationDateTime": "2025-07-11T13:15:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-07-11T15:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a10",
+            "creationDateTime": "2025-07-12T11:00:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-07-12T14:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a11",
+            "creationDateTime": "2025-07-13T10:00:00.000Z",
+            "status": "COMPLETED",
+            "appoinmentDateTime": "2025-07-14T15:30:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a12",
+            "creationDateTime": "2025-07-15T08:30:00.000Z",
+            "status": "CANCELLED",
+            "appoinmentDateTime": "2025-07-16T17:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a13",
+            "creationDateTime": "2025-07-17T09:15:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-07-18T14:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a14",
+            "creationDateTime": "2025-07-20T13:00:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-07-21T13:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a15",
+            "creationDateTime": "2025-07-22T14:40:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-07-25T14:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a16",
+            "creationDateTime": "2025-08-01T12:00:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-08-01T16:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a17",
+            "creationDateTime": "2025-08-02T11:00:00.000Z",
+            "status": "BOOKED",
+            "appoinmentDateTime": "2025-08-02T14:30:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a18",
+            "creationDateTime": "2025-08-03T10:00:00.000Z",
+            "status": "COMPLETED",
+            "appoinmentDateTime": "2025-08-03T15:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a19",
+            "creationDateTime": "2025-08-05T09:00:00.000Z",
+            "status": "CANCELLED",
+            "appoinmentDateTime": "2025-08-05T14:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a20",
+            "creationDateTime": "2025-09-01T10:00:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2025-09-01T16:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Uriel",
+                "lastName": "Olivero",
+                "phoneNumber": "+54123456789",
+                "email": "creenquesoygolfista@gmail.com"
+            }
+        },
+        {
+            "id": "a21",
+            "creationDateTime": "2025-07-10T13:17:00.000Z",
+            "status": "PENDING",
+            "appoinmentDateTime": "2024-09-01T16:00:00.000Z",
+            "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "client": {
+                "name": "Chiara",
+                "lastName": "Kordek",
+                "phoneNumber": "+54123456789",
+                "email": "porquesiempreandoconpalos@gmail.com"
+            }
+        }
+    ]
 }

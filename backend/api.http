@@ -1,0 +1,82 @@
+### Crear un nuevo turno
+POST http://localhost:3000/appointments
+Content-Type: application/json
+
+{
+  "appoinmentDateTime": "2025-07-10T14:00:00Z",
+  "offeredServiceId": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+  "client": {
+    "name":" Chiara",
+    "lastName": "Kordek",
+    "phoneNumber": "+54123456789",
+    "email": "creenquesoygolfista@gmail.com"
+  }
+}
+
+###
+
+### Obtener todos los turnos
+GET http://localhost:3000/appointments
+
+###
+
+### Obtener todos los turnos según estado
+GET http://localhost:3000/appointments?status=pending
+
+###
+
+### Obtener un turno por ID
+GET http://localhost:3000/appointments/a1
+
+###
+
+### Obtener turnos del usuario logueado
+GET http://localhost:3000/appointments/me
+
+###
+
+### Obtener turnos por día
+GET http://localhost:3000/appointments/day?date=2025-07-09
+
+###
+
+### Obtener turnos por semana
+GET http://localhost:3000/appointments/week?date=2025-07-03
+
+###
+
+### Obtener turnos por mes
+GET http://localhost:3000/appointments/month?date=2025-08-01
+
+###
+
+### Obtener turnos por año
+GET http://localhost:3000/appointments/year?date=2025-01-01
+
+###
+
+### Actualizar un turno por ID
+PUT http://localhost:3000/appointments/a1
+Content-Type: application/json
+
+{
+  "appoinmentDateTime": "2025-07-11T16:00:00Z",
+  "client" : {
+    "name" : "Valentin"
+  }
+}
+
+###
+
+### Cambiar estado de un turno
+PATCH http://localhost:3000/appointments/a1/status
+Content-Type: application/json
+
+{
+  "status": "CANCELLED"
+}
+
+###
+
+### Eliminar un turno
+DELETE http://localhost:3000/appointments/a2
