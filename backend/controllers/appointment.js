@@ -117,9 +117,13 @@ export class AppointmentController {
     static async updateAppointment(req, res) {
         try {
             const id = req.params.id;
-            const updateData = req.body;
-            const appointment = await AppointmentModel.updateAppointment(id, updateData)
-            return res.status(200).json(appointment)
+            const { error, data } = validateParcialAppointment(req.body);
+            if (error) {
+                return res.status(400).json({ error: error.message });
+            }
+            const updatedAppointment = await AppointmentModel.updateAppointment(id, data)
+            return res.status(200).json(updatedAppointment)
+            
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });

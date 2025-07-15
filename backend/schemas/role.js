@@ -1,5 +1,5 @@
 import z from 'zod'
-import permissionSchema from './permission.js'
+import { permissionSchema } from './permission.js'
 
 export const roleSchema = z.object({
     name: z.string().min(3, 'Role name is required'),

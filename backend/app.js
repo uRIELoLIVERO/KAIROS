@@ -1,6 +1,7 @@
 import express from 'express'
 
 import { appointmentsRouter } from './routes/appointments.js'
+import { companiesRouter } from './routes/companies.js '
 
 import { Temporal } from '@js-temporal/polyfill'
 globalThis.Temporal = Temporal
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/appointments', appointmentsRouter)
+app.use('/companies', companiesRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)

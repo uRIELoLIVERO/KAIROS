@@ -15,78 +15,99 @@
             "role": "CLIENT"
         }
     ],
-    "company": {
-        "id": "e1",
-        "name": "InkHouse Tattoo Studio",
-        "address": "123 Mitre Ave, Córdoba",
-        "email": "contact@inkhouse.com",
-        "phone": "3511234567",
-        "availability": {
-            "id": "d1",
-            "entity": "COMPANY",
-            "days": [
+    "company": [
+        {
+            "id": "f2bf17ab-9d54-4e12-bd56-c5142cb0761d",
+            "name": "InkHouse Tattoo Studio",
+            "icon": "https://example.com/icon.png",
+            "services": [
                 {
-                    "dayOfWeek": 1,
-                    "slots": [
-                        {
-                            "start": "12:00",
-                            "end": "00:00"
-                        }
-                    ]
-                },
-                {
-                    "dayOfWeek": 2,
-                    "slots": [
-                        {
-                            "start": "12:00",
-                            "end": "00:00"
-                        }
-                    ]
+                    "id": "s1",
+                    "name": "Blackout Tattoo",
+                    "description": "Full black coverage over large areas",
+                    "suggestedDuration": 90,
+                    "suggestedPrice": 40000
                 }
+            ],
+            "location": "123 Mitre Ave, Córdoba",
+            "email": "contact@inkhouse.com",
+            "phone": "3511234567",
+            "availability": {
+                "id": "d1",
+                "entity": "COMPANY",
+                "days": [
+                    {
+                        "dayOfWeek": 1,
+                        "slots": [
+                            {
+                                "start": "12:00",
+                                "end": "00:00"
+                            }
+                        ]
+                    },
+                    {
+                        "dayOfWeek": 2,
+                        "slots": [
+                            {
+                                "start": "12:00",
+                                "end": "00:00"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "professional": [
+        {
+            "id": "f41a1257-819b-4029-ab33-68c9fea7b137",
+            "bio": "nos dedicamos a realizar tatuajes blackout, cubriendo grandes áreas del cuerpo con tinta negra.",
+            "profilePicture": "https://example.com/profile.jpg",
+            "specialties": [
+                "blackout",
+                "realism"
             ]
         }
-    },
-    "professional": {
-        "id": "p1",
-        "userId": "u1",
-        "companyId": "e1",
-        "specialties": [
-            "blackout",
-            "realism"
-        ],
-        "availability": {
-            "id": "d2",
-            "entity": "PROFESSIONAL",
-            "days": [
+    ],
+    "staffMember": [
+        {
+            "id": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "companyID": "f2bf17ab",
+            "professionalId": "f41a1257-819b-4029-ab33-68c9fea7b137",
+            "availability": {
+                "id": "d2",
+                "days": [
+                    {
+                        "day": "MOONDAY",
+                        "timeSlots": [
+                            {
+                                "startTime": "14:00",
+                                "endTime": "20:00"
+                            }
+                        ]
+                    },
+                    {
+                        "day": "TUESDAY",
+                        "timeSlots": [
+                            {
+                                "startTime": "15:00",
+                                "end": "19:00"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "exceptions": [
                 {
-                    "dayOfWeek": 1,
-                    "slots": [
-                        {
-                            "start": "14:00",
-                            "end": "20:00"
-                        }
-                    ]
-                },
-                {
-                    "dayOfWeek": 3,
-                    "slots": [
-                        {
-                            "start": "15:00",
-                            "end": "19:00"
-                        }
-                    ]
+                    "id": "ex1",
+                    "date": "2025-07-03",
+                    "available": false,
+                    "reason": "Vacation"
                 }
-            ]
-        },
-        "exceptions": [
-            {
-                "id": "ex1",
-                "date": "2025-07-03",
-                "available": false,
-                "reason": "Vacation"
-            }
-        ]
-    },
+            ],
+            "role": []
+        }
+    ],
     "client": {
         "id": "c1",
         "userId": "u2",

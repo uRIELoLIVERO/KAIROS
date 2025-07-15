@@ -14,6 +14,7 @@ export class AppointmentModel {
             ...appointment,
         }
         appointments.push(newAppointment)
+        return newAppointment;
     }
 
     static async getAllAppointments({status}) {
@@ -129,8 +130,8 @@ export class AppointmentModel {
         if (appointmentIndex === -1) {
             throw new Error('Appointment not found');
         }
-        const deletedAppointment = appointments.splice(appointmentIndex, 1);
-        return deletedAppointment[0];
+        const deletedAppointment = appointments.splice(appointmentIndex, 1)[0];
+        return deletedAppointment;
     }
 
 
