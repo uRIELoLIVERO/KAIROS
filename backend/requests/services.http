@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:3000
+
+### 🔹 Crear un nuevo servicio
+POST {{baseUrl}}/services
+Content-Type: application/json
+
+{
+  "name": "Masaje terapéutico",
+  "description": "Masaje profundo para aliviar tensiones musculares",
+  "suggestedPrice": 3500,
+  "suggestedDuration": 60
+}
+###
+
+### 🔹 Obtener todos los servicios
+GET {{baseUrl}}/services
+
+###
+
+### 🔹 Obtener servicio por ID
+GET {{baseUrl}}/services/fbdea3e3-2f67-4cef-9831-1da1b3d13cf9
+
+###
+
+### 🔹 Actualizar servicio
+PUT {{baseUrl}}/services/fbdea3e3-2f67-4cef-9831-1da1b3d13cf9
+Content-Type: application/json
+
+{
+  "name": "Masaje descontracturante",
+  "description": "Masaje suave con enfoque en áreas tensas",
+  "suggestedPrice": 4000,
+  "suggestedDuration": 45
+}
+
+###
+
+### 🔹 Eliminar servicio
+DELETE {{baseUrl}}/services/fbdea3e3-2f67-4cef-9831-1da1b3d13cf9

@@ -1,6 +1,7 @@
 import { AppointmentModel } from '../models/appointment.js';
 
 import { validateAppointment, validateParcialAppointment } from '../schemas/appointment.js';
+import { validateStatus } from '../schemas/status.js';
 
 export class AppointmentController {
     static async createAppointment(req, res) {
@@ -133,11 +134,14 @@ export class AppointmentController {
     static async changeAppointmentStatus(req, res) {
         try {
             const id = req.params.id
-            const { status } = req.body;
-            const appointment = await AppointmentModel.changeAppointmentStatus(id, status);
-            appointment
-                ? res.status(200).json(appointment)
-                : res.status(404).json({ error: 'Appointment not found' });
+            const { error, data } = validateStatus(req.body);
+            if (error) {
+                return res.status(400).json({ error: error.message });
+            }
+
+            const appointment = await AppointmentModel.changeAppointmentStatus(id, data.status);
+            
+            res.status(200).json(appointment)
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });

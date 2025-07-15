@@ -22,7 +22,7 @@
             "icon": "https://example.com/icon.png",
             "services": [
                 {
-                    "id": "s1",
+                    "id": "fbdea3e3-2f67-4cef-9831-1da1b3d13cf9",
                     "name": "Blackout Tattoo",
                     "description": "Full black coverage over large areas",
                     "suggestedDuration": 90,
@@ -113,18 +113,19 @@
         "userId": "u2",
         "phone": "3519876543"
     },
-    "service": {
-        "id": "s1",
-        "companyId": "e1",
-        "name": "Blackout Tattoo",
-        "description": "Full black coverage over large areas",
-        "suggestedDuration": 90,
-        "suggestedPrice": 40000
-    },
+    "service": [
+        {
+            "id": "fbdea3e3-2f67-4cef-9831-1da1b3d13cf9",
+            "name": "Blackout Tattoo",
+            "description": "Full black coverage over large areas",
+            "suggestedDuration": 90,
+            "suggestedPrice": 40000
+        }
+    ],
     "offeredService": {
         "id": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
-        "professionalId": "p1",
-        "serviceId": "s1",
+        "serviceID": "fbdea3e3-2f67-4cef-9831-1da1b3d13cf9",
+        "professionalID": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
         "customDuration": 100,
         "customPrice": 45000,
         "customDescription": "Blackout with geometric details"
