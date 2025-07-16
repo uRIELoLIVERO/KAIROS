@@ -17,6 +17,6 @@ export function validateStaffMember (object) {
   return staffMemberSchema.safeParse(object)
 }
 
-export function validateParcialStaffMember (object) {
-  return staffMemberSchema.parcial().safeParse(object)
+export function validatePartialStaffMember (object) {
+  return staffMemberSchema.partial().safeParse(object)
 }

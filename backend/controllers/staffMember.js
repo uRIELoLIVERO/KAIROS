@@ -1,6 +1,6 @@
 import { StaffMemberModel } from '../models/staffMember.js';
 
-import { validateStaffMember, validateParcialStaffMember } from '../schemas/staffMember.js';
+import { validateStaffMember, validatePartialStaffMember } from '../schemas/staffMember.js';
 
 export class StaffMemberController {
     static async getAllProfessionalsByCompany(req, res) {

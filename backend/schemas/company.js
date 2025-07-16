@@ -17,6 +17,6 @@ export function validateCompany (object) {
   return companySchema.safeParse(object)
 }
 
-export function validateParcialCompany (object) {
+export function validatePartialCompany (object) {
   return companySchema.partial().safeParse(object)
 }

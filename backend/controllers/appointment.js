@@ -1,12 +1,12 @@
 import { AppointmentModel } from '../models/appointment.js';
 
-import { validateAppointment, validateParcialAppointment } from '../schemas/appointment.js';
+import { validateAppointment, validatePartialAppointment } from '../schemas/appointment.js';
 import { validateStatus } from '../schemas/status.js';
 
 export class AppointmentController {
     static async createAppointment(req, res) {
         try {
-            const { error, data } = validateParcialAppointment(req.body);
+            const { error, data } = validatePartialAppointment(req.body);
             if (error) {
                 return res.status(400).json({ error: error.message });
             }
@@ -118,7 +118,7 @@ export class AppointmentController {
     static async updateAppointment(req, res) {
         try {
             const id = req.params.id;
-            const { error, data } = validateParcialAppointment(req.body);
+            const { error, data } = validatePartialAppointment(req.body);
             if (error) {
                 return res.status(400).json({ error: error.message });
             }
@@ -139,9 +139,10 @@ export class AppointmentController {
                 return res.status(400).json({ error: error.message });
             }
 
-            const appointment = await AppointmentModel.changeAppointmentStatus(id, data.status);
-            
-            res.status(200).json(appointment)
+            const appointment = await AppointmentModel.changeAppointmentStatus(id, data);
+            appointment
+                ? res.status(200).json(appointment)
+                : res.status(404).json({ error: 'Appointment not found' });
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });
@@ -153,7 +154,10 @@ export class AppointmentController {
             const id = req.params.id
             const deletedAppointment = await AppointmentModel.deleteAppointment(id);
             deletedAppointment
-                ? res.status(200).json(deletedAppointment)
+                ? res.status(200).json({
+                    message: 'Appointment deleted successfully',
+                    deletedAppointment
+                })
                 : res.status(404).json({ error: 'The appointment does not exist' }); 
         } catch (error) {
             console.error('Error:', error);

@@ -3,13 +3,14 @@ import { CompanyModel } from '../models/company.js';
 import { ProfessionalModel } from '../models/professional.js';;
 import { ServiceModel } from '../models/service.js';
 
-import { validateCompany, validateParcialCompany } from '../schemas/company.js';
+import { validateCompany, validatePartialCompany } from '../schemas/company.js';
 
 
 export class CompanyController {
     static async createCompany (req, res){
         try {
-            const { error, data } = validateParcialCompany(req.body);
+            const { error, data } = validatePartialCompany(req.body);
+            
             if (error) {
                 return res.status(400).json({ error: error.message });
             }
@@ -49,9 +50,9 @@ export class CompanyController {
     static async updateCompany (req, res){
         try {
             const id = req.params.id;
-            const { error, data } = validateParcialCompany(req.body);
+            const { error, data } = validatePartialCompany(req.body);
             if (error) {
-                return res.status(400).json({ error: error.message})
+                return res.status(400).json({ error: 'Company not found'})
             }
             const updatedCompany = await CompanyModel.updateCompany(id, data);
             return res.status(200).json(updatedCompany)
@@ -67,7 +68,10 @@ export class CompanyController {
             const id = req.params.id
             const deletedCompany = await CompanyModel.deleteCompany(id);
             deletedCompany
-                ? res.status(200).json({ message: 'Company deleted successfully' })
+                ? res.status(200).json({ 
+                    message: 'Company deleted successfully',
+                    deletedCompany
+                    })
                 : res.status(404).json({ error: 'Company not found' });
         } catch (error) {
             console.error('Error:', error);

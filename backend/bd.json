@@ -122,14 +122,16 @@
             "suggestedPrice": 40000
         }
     ],
-    "offeredService": {
-        "id": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
-        "serviceID": "fbdea3e3-2f67-4cef-9831-1da1b3d13cf9",
-        "professionalID": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
-        "customDuration": 100,
-        "customPrice": 45000,
-        "customDescription": "Blackout with geometric details"
-    },
+    "offeredService": [
+        {
+            "id": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "serviceID": "fbdea3e3-2f67-4cef-9831-1da1b3d13cf9",
+            "professionalID": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+            "customDuration": 100,
+            "customPrice": 45000,
+            "customDescription": "Blackout with geometric details"
+        }
+    ],
     "appointment": [
         {
             "id": "a1",

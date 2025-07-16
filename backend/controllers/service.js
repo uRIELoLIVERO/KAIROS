@@ -1,10 +1,10 @@
 import { ServiceModel } from '../models/service.js'
-import { validateService, validateParcialService } from '../schemas/service.js'
+import { validateService, validatePartialService } from '../schemas/service.js'
 
 export class ServiceController {
     static async createService(req, res) {
         try {
-            const {error, data} = validateParcialService(req.body);
+            const {error, data} = validatePartialService(req.body);
             if (error) {
                 return res.status(400).json({ error: error.message });
             }
@@ -40,7 +40,7 @@ export class ServiceController {
     static async updateService(req, res) {
         try {
             const { id } = req.params;
-            const { error, data } = validateParcialService(req.body);
+            const { error, data } = validatePartialService(req.body);
             if (error) {
                 return res.status(400).json({ error: error.message });
             }
@@ -59,7 +59,10 @@ export class ServiceController {
             if (!deletedService) {
                 return res.status(404).json({ error: 'Service not found' });
             }
-            return res.status(200).json({ message: 'Service deleted successfully' });
+            return res.status(200).json({ 
+                message: 'Service deleted successfully',
+                deletedService
+            });
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });

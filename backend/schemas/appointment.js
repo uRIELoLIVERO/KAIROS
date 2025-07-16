@@ -15,6 +15,6 @@ export function validateAppointment (object) {
   return appointmentSchema.safeParse(object)
 }
 
-export function validateParcialAppointment (object) {
-  return appointmentSchema.deepPartial().safeParse(object)
+export function validatePartialAppointment (object) {
+  return appointmentSchema.partial().safeParse(object)
 }

@@ -1,0 +1,26 @@
+### Crear un nuevo servicio ofrecido
+POST http://localhost:3000/offered-services
+Content-Type: application/json
+
+{
+  "staffMemberID": "d3b07384-d9a7-4d1a-b78c-0123456789ab",
+  "serviceID": "fbdea3e3-2f67-4cef-9831-1da1b3d13cf9",
+  "customPrice": 2500,
+  "customDuration": 45,
+  "customDescription": "esto es lo que faltaba?"
+}
+
+### Obtener todos los servicios ofrecidos por un profesional
+GET http://localhost:3000/offered-services/d3b07384-d9a7-4d1a-b78c-0123456789ab
+
+### Actualizar un servicio ofrecido
+PUT http://localhost:3000/offered-services/d8cfaa94-fbbf-4b96-9386-a51588d340f9
+Content-Type: application/json
+
+{
+  "customPrice": 2800,
+  "customDuration": 50
+}
+
+### Eliminar un servicio ofrecido
+DELETE http://localhost:3000/offered-services/287f379b-53db-446e-8a0a-2983d43b6b57

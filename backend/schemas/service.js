@@ -12,6 +12,6 @@ export function validateService (object) {
   return serviceSchema.safeParse(object)
 }
 
-export function validateParcialService (object) {
+export function validatePartialService (object) {
   return serviceSchema.partial().safeParse(object)
 }

@@ -20,6 +20,6 @@ export function validateClient (object) {
   return clientSchema.safeParse(object)
 }
 
-export function validateParcialClient (object) {
-  return clientSchema.parcial().safeParse(object)
+export function validatePartialClient (object) {
+  return clientSchema.partial().safeParse(object)
 }

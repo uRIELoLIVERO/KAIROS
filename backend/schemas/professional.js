@@ -12,6 +12,6 @@ export function validateProfessional (object) {
   return professionalSchema.safeParse(object)
 }
 
-export function validateParcialProfessional (object) {
-  return professionalSchema.parcial().safeParse(object)
+export function validatePartialProfessional (object) {
+  return professionalSchema.partial().safeParse(object)
 }
