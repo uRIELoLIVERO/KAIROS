@@ -22,7 +22,7 @@ companiesRouter.delete('/:id', CompanyController.deleteCompany);
 
 //professionals
 // Get all professionals of a company (and by rol if needed)
-companiesRouter.get('/:id/professionals', StaffMemberController.getAllProfessionalsByCompany);
+companiesRouter.get('/:id/professionals', StaffMemberController.getAllByCompany);
 
 // Get professional by ID
 companiesRouter.get('/:id/professionals/:professionalID', CompanyController.getProfessionalByID);

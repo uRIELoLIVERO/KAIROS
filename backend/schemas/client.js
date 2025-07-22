@@ -1,8 +1,10 @@
 import z from 'zod'
 import { phoneNumberSchema } from './phoneNumber.js'
+import { randomUUID } from 'crypto'
 
 export const clientSchema = z.object({
-  name: z.string()
+  id: z.string().uuid("Invalid UUID format").default(() => randomUUID()),
+  firstName: z.string()
     .min(1, "Name is required")
     .refine(val => /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/.test(val), {
       message: "Name must not contain numbers or symbols",
@@ -12,8 +14,8 @@ export const clientSchema = z.object({
     .refine(val => /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/.test(val), {
       message: "Last name must not contain numbers or symbols",
     }),
-    phoneNumber: phoneNumberSchema,
-    email: z.string().email('Invalid email format')
+  email: z.string().email('Invalid email format'),
+  phoneNumber: phoneNumberSchema
 })
 
 export function validateClient (object) {

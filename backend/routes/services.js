@@ -7,7 +7,7 @@ servicesRouter.post('/', ServiceController.createService);
 
 servicesRouter.get('/', ServiceController.getAllServices);
 
-servicesRouter.get('/:id', ServiceController.getServiceByID);
+servicesRouter.get('/:id', ServiceController.getServiceById);
 
 servicesRouter.put('/:id', ServiceController.updateService);
 

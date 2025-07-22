@@ -1,7 +1,5 @@
 import { isValidUUID } from '../utils/uuid.js';
-import { CompanyModel } from '../models/company.js';
-import { ProfessionalModel } from '../models/professional.js';;
-import { ServiceModel } from '../models/service.js';
+import { CompanyModel, ProfessionalModel, ServiceModel } from '../models/sequelize/sequelize.js';
 
 import { validateCompany, validatePartialCompany } from '../schemas/company.js';
 

@@ -1,0 +1,24 @@
+### Actualizar disponibilidad de un profesional
+PUT http://localhost:3000/professionals/1/availability
+Content-Type: application/json
+
+{
+  "availableDays": ["Monday", "Tuesday", "Wednesday"],
+  "startTime": "09:00",
+  "endTime": "17:00"
+}
+
+### Agregar una excepción a la disponibilidad del profesional
+POST http://localhost:3000/professionals/1/exceptions
+Content-Type: application/json
+
+{
+  "date": "2025-07-20",
+  "reason": "Vacaciones"
+}
+
+### Obtener disponibilidad de un profesional
+GET http://localhost:3000/professionals/1/availability
+
+### Obtener citas (appointments) del profesional
+GET http://localhost:3000/professionals/1/appointments

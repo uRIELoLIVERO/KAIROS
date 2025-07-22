@@ -1,14 +1,15 @@
 import z from "zod";
-import { clientSchema } from "./client.js";
 import { statusSchema } from "./status.js";
 
 const appointmentSchema = z.object({
     id: z.string().uuid("Invalid UUID format"),
-    creationDateTime: z.string().datetime("Invalid date format"),
-    appoinmentDateTime: z.string().datetime("Invalid date format"),
-    status: statusSchema,
+    appointmentDateTime: z.string().datetime("Invalid date format"),
     offeredServiceId: z.string().uuid("Invalid UUID format"),
-    client: clientSchema,
+    clientId: z.string().uuid("Invalid UUID format"),
+    statusId: z.number().int().positive(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+    canceledAt: z.string().datetime().optional().nullable()
 })
 
 export function validateAppointment (object) {

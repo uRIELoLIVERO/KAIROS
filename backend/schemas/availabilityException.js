@@ -8,3 +8,11 @@ export const availabilityExceptionSchema = z.object({
     timeSlots: timeSlotSchema.array(),
     reason: z.string().optional()
 })
+
+export function validateAvailabilityException(object) {
+    return availabilityExceptionSchema.safeParse(object)
+}
+
+export function validatePartialAvailabilityException(object) {
+    return availabilityExceptionSchema.partial().safeParse(object)
+}

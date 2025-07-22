@@ -1,8 +1,8 @@
 import z from 'zod'
 
 export const phoneNumberSchema = z.string().trim().refine((value) => {
-  // Requiere que empiece con "+" y tenga entre 10 y 15 dígitos (común en formatos internacionales)
-  return /^\+\d{10,15}$/.test(value)
+  // Acepta entre 8 y 20 dígitos numéricos
+  return /^\d{8,20}$/.test(value)
 }, {
-  message: 'Invalid phone number format, please use a valid format like +541234567890'
+  message: 'Invalid phone number format, must contain only digits (8 to 20 characters)'
 })

@@ -1,4 +1,4 @@
-import { OfferedServiceModel } from '../models/offeredService.js'
+import { OfferedServiceModel } from '../models/sequelize/sequelize.js'
 import { validateOfferedService, validatePartialOfferedService } from '../schemas/offeredService.js'
 
 export class OfferedServiceController {
