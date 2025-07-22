@@ -26,6 +26,7 @@ export default class availability_day extends Model {
     sequelize,
     tableName: 'availability_day',
     timestamps: false,
+    underscored: true,
     indexes: [
       {
         name: "PRIMARY",

@@ -32,6 +32,7 @@ export default class client extends Model {
     sequelize,
     tableName: 'client',
     timestamps: false,
+    underscored: true,
     indexes: [
       {
         name: "PRIMARY",

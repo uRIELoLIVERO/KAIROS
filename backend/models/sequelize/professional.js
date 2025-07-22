@@ -13,17 +13,19 @@ export default class professional extends Model {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    profile_picture: {
+    profilePicture: {
       type: DataTypes.STRING(500),
-      allowNull: true
+      allowNull: true,
+      field: 'profile_picture'
     },
     specialties: {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    user_id: {
+    userId: {
       type: DataTypes.CHAR(36),
       allowNull: false,
+      field: 'user_id',
       references: {
         model: 'user',
         key: 'id'
@@ -33,6 +35,7 @@ export default class professional extends Model {
     sequelize,
     tableName: 'professional',
     timestamps: false,
+    underscored: true,
     indexes: [
       {
         name: "PRIMARY",

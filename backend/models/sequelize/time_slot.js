@@ -10,25 +10,29 @@ export default class time_slot extends Model {
       allowNull: false,
       primaryKey: true
     },
-    start_time: {
+    startTime: {
       type: DataTypes.TIME,
-      allowNull: false
+      allowNull: false,
+      field: 'start_time'
     },
-    end_time: {
+    endTime: {
       type: DataTypes.TIME,
-      allowNull: false
+      allowNull: false,
+      field: 'end_time'
     },
-    availability_day_id: {
+    availabilityDayId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: 'availability_day_id',
       references: {
         model: 'availability_day',
         key: 'id'
       }
     },
-    availability_exception_id: {
+    availabilityExceptionId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: 'availability_day_id',
       references: {
         model: 'availability_exception',
         key: 'id'
@@ -38,6 +42,7 @@ export default class time_slot extends Model {
     sequelize,
     tableName: 'time_slot',
     timestamps: false,
+    underscored: true,
     indexes: [
       {
         name: "PRIMARY",

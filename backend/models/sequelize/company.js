@@ -26,6 +26,11 @@ export default class company extends Model {
     sequelize,
     tableName: 'company',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    underscored: true,
+    paranoid: true,
+    deletedAt: 'deleted_at',
     indexes: [
       {
         name: "PRIMARY",

@@ -12,7 +12,8 @@ const companySchema = z.object({
     availability: z.array(availabilitySchema, 'Availability must be an array of availability objects'),
     availabilityException: z.array(availabilityExceptionSchema, 'Availability exceptions must be an array of availability exception objects'),
     createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
+    updatedAt: z.string().datetime(),
+    deletedAt: z.string().datetime().optional().nullable()
 })
 
 export function validateCompany (object) {

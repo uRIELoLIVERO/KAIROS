@@ -53,6 +53,9 @@ export default class staff_member extends Model {
     sequelize,
     tableName: 'staff_member',
     timestamps: false,
+    underscored: true,
+    paranoid: true,
+    deletedAt: 'deleted_at',
     indexes: [
       {
         name: "PRIMARY",

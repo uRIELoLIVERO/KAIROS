@@ -37,6 +37,11 @@ export default class service extends Model {
     sequelize,
     tableName: 'service',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    underscored: true,
+    paranoid: true,
+    deletedAt: 'deleted_at',
     indexes: [
       {
         name: "PRIMARY",

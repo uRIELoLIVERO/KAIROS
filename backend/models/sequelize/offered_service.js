@@ -41,6 +41,9 @@ export default class offered_service extends Model {
     sequelize,
     tableName: 'offered_service',
     timestamps: false,
+    underscored: true,
+    paranoid: true,
+    deletedAt: 'deleted_at',
     indexes: [
       {
         name: "PRIMARY",

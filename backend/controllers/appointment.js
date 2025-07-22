@@ -18,7 +18,8 @@ export class AppointmentController {
             statusId: data.status_id || data.statusId,
             canceledAt: data.canceled_at || data.canceledAt,
             createdAt: data.created_at || data.createdAt,
-            updatedAt: data.updated_at || data.updatedAt
+            updatedAt: data.updated_at || data.updatedAt,
+            deletedAt: data.deleted_at || data.deletedAt
         };
         
         // Eliminar campos duplicados si existen
@@ -73,7 +74,7 @@ export class AppointmentController {
             const where = status ? { statusId: status } : undefined;
             const appointments = await AppointmentModel.findAll({ 
                 where,
-                raw: false
+                raw: false 
             });
             return res.status(200).json(appointments.map(a => AppointmentController.transformAppointmentData(a)));
         } catch (error) {

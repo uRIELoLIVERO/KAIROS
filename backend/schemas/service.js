@@ -7,7 +7,8 @@ export const serviceSchema = z.object({
     suggestedPrice: z.number().positive("Price must be a positive number"),
     suggestedDuration: z.number().int().positive("Duration must be a positve integer"),
     createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),    
+    updatedAt: z.string().datetime(),
+    deletedAt: z.string().datetime().optional().nullable()    
 })
 
 export function validateService (object) {

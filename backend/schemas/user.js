@@ -22,4 +22,5 @@ export const userSchema = z.object({
     globalRole: globalRoleSchema,
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
+    deletedAt: z.string().datetime().optional().nullable()
 })

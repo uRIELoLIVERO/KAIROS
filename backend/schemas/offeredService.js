@@ -7,6 +7,7 @@ export const offeredServiceSchema = z.object({
     customDescription: z.string().optional(),
     customPrice: z.number().positive("Custom price must be a positive number").optional(),
     customDuration: z.number().int().positive("Custom duration must be a positive integer").optional(),
+    deletedAt: z.string().datetime().optional().nullable() 
 })
 
 export function validateOfferedService(object) {

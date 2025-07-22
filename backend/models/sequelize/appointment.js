@@ -53,6 +53,8 @@ export default class appointment extends Model {
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     underscored: true,
+    paranoid: true,
+    deletedAt: 'deleted_at',
     indexes: [
       {
         name: "PRIMARY",

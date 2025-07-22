@@ -6,10 +6,11 @@ const appointmentSchema = z.object({
     appointmentDateTime: z.string().datetime("Invalid date format"),
     offeredServiceId: z.string().uuid("Invalid UUID format"),
     clientId: z.string().uuid("Invalid UUID format"),
-    statusId: z.number().int().positive(),
+    statusId: z.number().int(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
-    canceledAt: z.string().datetime().optional().nullable()
+    deletedAt: z.string().datetime().optional().nullable(),
+    canceledAt: z.string().datetime().optional().nullable(),
 })
 
 export function validateAppointment (object) {

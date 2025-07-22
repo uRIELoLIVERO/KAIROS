@@ -10,7 +10,8 @@ export const staffMemberSchema = z.object({
     ProfessionalID: z.string().uuid("Invalid UUID format"),
     role: z.array(roleSchema),
     availability: z.array(availabilitySchema),
-    availabilityException: z.array(availabilityExceptionSchema)
+    availabilityException: z.array(availabilityExceptionSchema),
+    deletedAt: z.string().datetime().optional().nullable() 
 })
 
 export function validateStaffMember (object) {

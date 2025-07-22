@@ -14,9 +14,10 @@ export default class availability_exception extends Model {
       type: DataTypes.DATEONLY,
       allowNull: false
     },
-    availability: {
+    isAvailable: {
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: false,
+      field: 'is_available'
     },
     reason: {
       type: DataTypes.TEXT,
@@ -26,6 +27,7 @@ export default class availability_exception extends Model {
     sequelize,
     tableName: 'availability_exception',
     timestamps: false,
+    underscored: true,
     indexes: [
       {
         name: "PRIMARY",
