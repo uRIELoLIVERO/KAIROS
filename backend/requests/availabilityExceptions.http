@@ -1,0 +1,12 @@
+### Agregar una excepción de disponibilidad a un staff member
+POST http://localhost:3000/availability-exceptions/ba937b4d-6748-11f0-b676-00ff1d8344ad
+Content-Type: application/json
+
+{
+  "day": "2025-08-01",
+  "isAvailable": false,
+  "reason": "Vacaciones"
+}
+
+### Eliminar una excepción de disponibilidad
+DELETE http://localhost:3000/availability-exceptions/ba937b4d-6748-11f0-b676-00ff1d8344ad/4

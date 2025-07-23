@@ -1,13 +1,29 @@
-import { StaffMemberModel, AvailabilityModel, AvailabilityExceptionModel, AppointmentModel, CompanyModel, ProfessionalModel } from '../models/sequelize/sequelize.js';
+import { StaffMemberModel, AppointmentModel, CompanyModel, ProfessionalModel } from '../models/sequelize/sequelize.js';
 
-import { validateAvailability, validatePartialAvailability } from '../schemas/availability.js';
-import { validateAvailabilityException } from '../schemas/availabilityException.js';
 import { validatePartialStaffMember } from '../schemas/staffMember.js';
+import { AppointmentController } from './appointment.js';
 
 export class StaffMemberController {
   static async transformStaffMemberData(staffMember) {
+    const data = staffMember.toJSON ? staffMember.toJSON() : staffMember;
 
+    const transformedData = {
+      id: data.id,
+      companyId: data.company_id || data.companyId,
+      professionalId: data.professional_id || data.professionalId,
+      role: data.role,
+      availability: data.availability,
+      availabilityException: data.availability_exception || data.availabilityException,
+      deletedAt: data.deleted_at || data.deletedAt
+    }
 
+    Object.keys(transformedData).forEach(key =>{
+      if (transformedData[key] === undefined) {
+        delete transformedData[key]
+      }
+    })
+
+    return transformedData
   }
 
   static async createStaffMember(req, res) {
@@ -61,11 +77,10 @@ export class StaffMemberController {
       const { companyId } = req.params;
 
       const staff = await StaffMemberModel.findAll({
-        where: { companyId },
-        include: ['professional', 'role']
+        where: { companyId }
       });
 
-      return res.status(200).json(staff);
+      return res.status(200).json((staff.map(s => StaffMemberController.transformStaffMemberData(s))));
     } catch (error) {
       console.error('Error in getAllByCompany:', error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -81,94 +96,9 @@ export class StaffMemberController {
         include: ['offeredService', 'client']
       });
 
-      return res.status(200).json(appointments);
+      return res.status(200).json(AppointmentController.transformAppointmentData(appointments));
     } catch (error) {
       console.error('Error in getAppointments:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  static async getAvailability(req, res) {
-    try {
-      const { id } = req.params;
-
-      const staff = await StaffMemberModel.findByPk(id, {
-        include: [{ association: 'availability', include: ['availability_days', 'time_slots'] }]
-      });
-
-      if (!staff) return res.status(404).json({ error: 'Staff member not found' });
-
-      return res.status(200).json(staff.availability);
-    } catch (error) {
-      console.error('Error in getAvailability:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  static async updateAvailability(req, res) {
-    try {
-      const { id } = req.params;
-      const { error, data } = validatePartialAvailability(req.body);
-      if (error) return res.status(400).json({ error: error.message });
-
-      const staff = await StaffMemberModel.findByPk(id);
-      if (!staff) return res.status(404).json({ error: 'Staff member not found' });
-
-      await AvailabilityModel.update(data, {
-        where: { id: staff.availabilityId }
-      });
-
-      const updated = await AvailabilityModel.findByPk(staff.availabilityId);
-
-      return res.status(200).json(updated);
-    } catch (error) {
-      console.error('Error in updateAvailability:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  static async addAvailabilityException(req, res) {
-    try {
-      const { id } = req.params;
-      const { error, data } = validateAvailabilityException(req.body);
-      if (error) return res.status(400).json({ error: error.message });
-
-      const staff = await StaffMemberModel.findByPk(id);
-      if (!staff) return res.status(404).json({ error: 'Staff member not found' });
-
-      const exception = await AvailabilityExceptionModel.create({
-        ...data,
-        staffMemberId: id
-      });
-
-      return res.status(201).json(exception);
-    } catch (error) {
-      console.error('Error in addAvailabilityException:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  static async deleteAvailabilityException(req, res) {
-    try {
-      const { id, exceptionId } = req.params;
-
-      const staff = await StaffMemberModel.findByPk(id);
-      if (!staff) return res.status(404).json({ error: 'Staff member not found' });
-
-      const deletedCount = await AvailabilityExceptionModel.destroy({
-        where: {
-          id: exceptionId,
-          staffMemberId: id
-        }
-      });
-
-      if (deletedCount === 0) {
-        return res.status(404).json({ error: 'Availability exception not found or does not belong to this staff member' });
-      }
-
-      return res.status(204).send();
-    } catch (error) {
-      console.error('Error in deleteAvailabilityException:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }

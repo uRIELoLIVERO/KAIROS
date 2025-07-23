@@ -1,9 +1,9 @@
-import z from 'zod';
+import { z } from 'zod';
 import { availabilityDaySchema } from './availabilityDay.js';
 
 export const availabilitySchema = z.object({
-    days: availabilityDaySchema.array()
-})
+  availability_days: z.array(availabilityDaySchema).nonempty('At least one day is required')
+});
 
 export function validateAvailability(object) {
     return availabilitySchema.safeParse(object)

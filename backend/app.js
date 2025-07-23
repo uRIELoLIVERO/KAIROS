@@ -6,6 +6,8 @@ import { offeredServicesRouter } from './routes/offeredServices.js';
 import { professionalsRouter } from './routes/professionals.js';
 import { servicesRouter } from './routes/services.js';
 import { staffMemberRouter } from './routes/staffMember.js';
+import { availabilitiesRouter } from './routes/availabilities.js';
+import { availabilityExceptionsRouter } from './routes/availabilityExceptions.js';
 import { authRouter } from './routes/auth.js';
 
 import { sequelize } from './models/sequelize/sequelize.js';
@@ -29,6 +31,8 @@ app.use('/offered-services', offeredServicesRouter);
 app.use('/professionals', professionalsRouter);
 app.use('/services', servicesRouter);
 app.use('/staff-members', staffMemberRouter);
+app.use('/availabilities', availabilitiesRouter);
+app.use('/availability-exceptions', availabilityExceptionsRouter);
 app.use('/auth', authRouter);
 
 async function startServer() {

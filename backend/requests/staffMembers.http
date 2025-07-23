@@ -1,27 +1,23 @@
-### Create StaffMember 
+### Crear un nuevo staff member
 POST http://localhost:3000/staff-members
-
-### Actualizar disponibilidad de un profesional
-PUT http://localhost:3000/staff-members/1/availability
 Content-Type: application/json
 
 {
-  "availableDays": ["Monday", "Tuesday", "Wednesday"],
-  "startTime": "09:00",
-  "endTime": "17:00"
+  "companyId": 1,
+  "professionalId": 1,
+  "roleId": 1
 }
 
-### Agregar una excepción a la disponibilidad del profesional
-POST http://localhost:3000/staff-members/1/exceptions
+### Eliminar staff member por ID
+DELETE http://localhost:3000/staff-members/1
+
+### Obtener staff members de una compañía
+GET http://localhost:3000/staff-members/company/1
+
+### Actualizar rol de un staff member
+PATCH http://localhost:3000/staff-members/1/role
 Content-Type: application/json
 
 {
-  "date": "2025-07-20",
-  "reason": "Vacaciones"
+  "roleId": 2
 }
-
-### Obtener disponibilidad de un profesional
-GET http://localhost:3000/staff-members/1/availability
-
-### Obtener citas (appointments) del profesional
-GET http://localhost:3000/staff-members/1/appointments

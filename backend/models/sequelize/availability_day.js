@@ -10,13 +10,15 @@ export default class availability_day extends Model {
       allowNull: false,
       primaryKey: true
     },
-    day_of_week: {
-      type: DataTypes.TINYINT,
-      allowNull: false
+    dayOfWeek: {
+      type: DataTypes.ENUM('MONDAY','TUESDAY','WEDNESDAY','THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'),
+      allowNull: false,
+      field: 'day_of_week'
     },
-    availability_id: {
+    availabilityId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: 'availability_id',
       references: {
         model: 'availability',
         key: 'id'

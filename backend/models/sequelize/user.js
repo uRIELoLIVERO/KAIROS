@@ -9,31 +9,35 @@ export default class user extends Model {
       allowNull: false,
       primaryKey: true
     },
-    first_name: {
+    firstName: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
+      field: 'first_name'
     },
-    last_name: {
+    lastName: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
+      field: 'last_name'
     },
     email: {
       type: DataTypes.STRING(100),
       allowNull: false,
       unique: "email"
     },
-    phone_number: {
+    phoneNumber: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      unique: "phone_number"
+      unique: "phone_number",
+      field: 'phone_number'
     },
     password: {
       type: DataTypes.CHAR(60),
       allowNull: false
     },
-    global_role_id: {
+    globalRoleId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: 'global_role_id',
       references: {
         model: 'global_role',
         key: 'id'

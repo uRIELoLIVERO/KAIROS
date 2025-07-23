@@ -27,6 +27,9 @@ appointmentsRouter.get('/year', AppointmentController.getAppointmentsByYear);
 // Get specific appointment by ID
 appointmentsRouter.get('/:id', AppointmentController.getAppointmentById);
 
+//Get all appointment by staff member
+appointmentsRouter.get('/staff-members/:staffMemberId', AppointmentController.getAppointmentsByStaffMember)
+
 // update an existing appointment by ID
 appointmentsRouter.put('/:id', AppointmentController.updateAppointment)
 

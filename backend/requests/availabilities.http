@@ -1,0 +1,29 @@
+### Obtener disponibilidad de un staff member
+GET http://localhost:3000/availabilities/ba937b4d-6748-11f0-b676-00ff1d8344ad
+
+### Actualizar disponibilidad de un staff member
+PUT http://localhost:3000/availabilities/ba937b4d-6748-11f0-b676-00ff1d8344ad
+Content-Type: application/json
+
+{
+  "availability_days": [
+    {
+      "dayOfWeek": "MONDAY",
+      "timeSlots": [
+        {
+            "startTime": "09:00",
+            "endTime": "17:00"
+        }
+      ]
+    },
+    {
+      "dayOfWeek": "TUESDAY",
+      "timeSlots": [
+        {
+            "startTime": "09:00",
+            "endTime": "17:00"
+        }
+      ]
+    }
+  ]
+}

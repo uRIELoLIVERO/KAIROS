@@ -1,4 +1,4 @@
-import { AppointmentModel, ClientModel, StatusModel } from '../models/sequelize/sequelize.js';
+import { AppointmentModel, ClientModel, StatusModel, OfferedServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
 import { validateAppointment, validatePartialAppointment } from '../schemas/appointment.js';
 import { validateStatus, validatePartialStatus } from '../schemas/status.js';
 import { validateClient } from '../schemas/client.js'
@@ -165,6 +165,36 @@ export class AppointmentController {
         }
     }
     
+static async getAppointmentsByStaffMember(req, res) {
+    try {
+        const { staffMemberId } = req.params;
+
+        const appointments = await AppointmentModel.findAll({
+            include: [
+                {
+                    model: OfferedServiceModel,
+                    required: true,
+                    include: [
+                        {
+                            model: StaffMemberModel,
+                            required: true,
+                            where: { id: staffMemberId }
+                        }
+                    ]
+                }
+            ],
+            raw: false
+        });
+
+        return res
+            .status(200)
+            .json(appointments.map((a) => AppointmentController.transformAppointmentData(a)));
+    } catch (error) {
+        console.error('Error', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
     static async updateAppointment(req, res) {
         try {
             const id = req.params.id;

@@ -55,6 +55,11 @@ GET http://localhost:3000/appointments/year?date=2025-01-01
 
 ###
 
+### Obtener turnos por staffMember
+GET http://localhost:3000/appointments/staff-members/ba937b4d-6748-11f0-b676-00ff1d8344ad
+
+###
+
 ### Actualizar un turno por ID (IGNORAR)
 PUT http://localhost:3000/appointments/80d976f3-a6f4-46b0-a3ff-0d295aff09f4
 Content-Type: application/json

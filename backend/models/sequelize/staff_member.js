@@ -9,41 +9,46 @@ export default class staff_member extends Model {
       allowNull: false,
       primaryKey: true
     },
-    company_id: {
+    companyId: {
       type: DataTypes.CHAR(36),
       allowNull: false,
+      field: 'company_id',
       references: {
         model: 'company',
         key: 'id'
       }
     },
-    professional_id: {
+    professionalId: {
       type: DataTypes.CHAR(36),
       allowNull: false,
+      field: 'professional_id',
       references: {
         model: 'professional',
         key: 'id'
       }
     },
-    role_id: {
+    roleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: 'role_id',
       references: {
         model: 'role',
         key: 'id'
       }
     },
-    availability_id: {
+    availabilityId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: 'availability_id',
       references: {
         model: 'availability',
         key: 'id'
       }
     },
-    availability_exception_id: {
+    availabilityExceptionId: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: 'availability_exception_id',
       references: {
         model: 'availability_exception',
         key: 'id'

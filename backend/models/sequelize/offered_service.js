@@ -9,33 +9,38 @@ export default class offered_service extends Model {
       allowNull: false,
       primaryKey: true
     },
-    service_id: {
+    serviceId: {
       type: DataTypes.CHAR(36),
       allowNull: false,
+      field: 'service_id',
       references: {
         model: 'service',
         key: 'id'
       }
     },
-    staff_member_id: {
+    staffMemberId: {
       type: DataTypes.CHAR(36),
       allowNull: false,
+      field: 'staff_member_id',
       references: {
         model: 'staff_member',
         key: 'id'
       }
     },
-    custom_description: {
+    customDescription: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
+      field: 'custom_description'
     },
-    custom_price: {
+    customPrice: {
       type: DataTypes.DECIMAL(10,2),
-      allowNull: true
+      allowNull: true,
+      field: 'custom_price'
     },
-    custom_duration: {
+    customDuration: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      field: 'custom_duration'
     }
   }, {
     sequelize,
