@@ -9,7 +9,6 @@ export class AppointmentController {
     static transformAppointmentData(appointment) {
         const data = appointment.toJSON ? appointment.toJSON() : appointment;
         
-        // Transformar los nombres de campos snake_case a camelCase
         const transformedData = {
             id: data.id,
             appointmentDateTime: data.appointment_date_time || data.appointmentDateTime,
@@ -22,7 +21,6 @@ export class AppointmentController {
             deletedAt: data.deleted_at || data.deletedAt
         };
         
-        // Eliminar campos duplicados si existen
         Object.keys(transformedData).forEach(key => {
             if (transformedData[key] === undefined) {
                 delete transformedData[key];

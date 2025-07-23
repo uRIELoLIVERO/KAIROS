@@ -17,17 +17,20 @@ export default class service extends Model {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    suggested_price: {
+    suggestedPrice: {
       type: DataTypes.FLOAT,
-      allowNull: true
+      allowNull: true,
+      field: 'suggested_price'
     },
-    suggested_duration: {
+    suggestedDuration: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      field: 'suggested_duration'
     },
-    company_id: {
+    companyId: {
       type: DataTypes.CHAR(36),
       allowNull: true,
+      field: 'company_id',
       references: {
         model: 'company',
         key: 'id'

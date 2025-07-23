@@ -1,10 +1,61 @@
-import { StaffMemberModel, AvailabilityModel, AvailabilityExceptionModel, AppointmentModel } from '../models/sequelize/sequelize.js';
+import { StaffMemberModel, AvailabilityModel, AvailabilityExceptionModel, AppointmentModel, CompanyModel, ProfessionalModel } from '../models/sequelize/sequelize.js';
 
 import { validateAvailability, validatePartialAvailability } from '../schemas/availability.js';
 import { validateAvailabilityException } from '../schemas/availabilityException.js';
 import { validatePartialStaffMember } from '../schemas/staffMember.js';
 
 export class StaffMemberController {
+  static async transformStaffMemberData(staffMember) {
+
+
+  }
+
+  static async createStaffMember(req, res) {
+    try {
+      const { id, professionalID } = req.params;
+    
+      // Validación básica del formato
+      if (!isValidUUID(id) || !isValidUUID(professionalID)) {
+      return res.status(400).json({ error: "Invalid IDs" });
+      }
+    
+      const resultRole = validateRole(req.body)
+      if (!resultRole) {
+        return res.status(400).json({ error: resultRole.error.message })
+      }
+    
+      // Buscar empresa y profesional
+    
+      const company = await CompanyModel.getCompanyByID(id);
+      const professional = await ProfessionalModel.getProfessionalByID(professionalID);
+    
+      if (!company || !professional) {
+      return res.status(404).json({ error: "Company or professional not found" });
+      }
+    
+      // Si se permiten roles personalizados desde el body (opcional)
+      const staffMember = await StaffMemberModel.create({
+          id: crypto.randomUUID(),
+          companyId: id,
+          professionalId: professionalID, 
+          role: resultRole,
+          availability: company.availability,
+          availabilityException: company.availabilityException,
+      });
+    
+      const staffMemberData = StaffMemberController.transformStaffMemberData(staffMember)
+    
+      return res.status(201).json({ message: "Professional added to company", staffMemberData });
+    
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+  }  
+
+  static async deleteStaffMember(req, res) {
+    
+  }
+
   static async getAllByCompany(req, res) {
     try {
       const { companyId } = req.params;

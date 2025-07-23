@@ -1,20 +1,50 @@
 import { isValidUUID } from '../utils/uuid.js';
-import { CompanyModel, ProfessionalModel, ServiceModel } from '../models/sequelize/sequelize.js';
-
+import { AppointmentModel, CompanyModel, ProfessionalModel, ServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
+import crypto from 'crypto';
 import { validateCompany, validatePartialCompany } from '../schemas/company.js';
+import { validateStatus } from '../schemas/status.js';
+import availability from '../models/sequelize/availability.js';
+import { StaffMemberController } from './staffMember.js';
 
 
 export class CompanyController {
+        static transformCompanyData(company) {
+        const data = company.toJSON ? company.toJSON() : company;
+        
+        const transformedData = {
+            name: data.name,
+            icon: data.icon,
+            location: data.location,
+            createdAt: data.created_at || data.createdAt,
+            updatedAt: data.updated_at || data.updatedAt,
+            deletedAt: data.deleted_at || data.deletedAt
+        };
+        
+        Object.keys(transformedData).forEach(key => {
+            if (transformedData[key] === undefined) {
+                delete transformedData[key];
+            }
+        });
+        
+        return transformedData;
+    }
+
     static async createCompany (req, res){
         try {
-            const { error, data } = validatePartialCompany(req.body);
-            
-            if (error) {
-                return res.status(400).json({ error: error.message });
+            const resultCompany = validatePartialCompany(req.body);
+            if (!resultCompany.success) {
+                return res.status(400).json({ error: resultCompany.error.message });
             }
+            const data = resultCompany.data
 
-            const newCompany = await CompanyModel.createCompany(data);
-            return res.status(201).json(newCompany);            
+            const newCompany = await CompanyModel.create({
+                ...data,
+                id: crypto.randomUUID(),
+            });
+
+            // When you create a company, you are assigned the role of Owner by default
+
+            return res.status(201).json(CompanyController.transformCompanyData(newCompany));            
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });   
@@ -23,11 +53,11 @@ export class CompanyController {
     
     static async getAllCompanies (req, res){
         try {
-            const companies = await CompanyModel.getAllCompanies();
+            const companies = await CompanyModel.findAll({ raw: false });
             if (companies.length === 0) {
                 return res.status(404).json({ error: 'No companies found' });
             }
-            return res.status(200).json(companies);
+            return res.status(200).json(companies.map( c => CompanyController.transformCompanyData(c)));
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });   
@@ -37,8 +67,8 @@ export class CompanyController {
     static async getCompanyByID (req, res){
         try {
             const id = req.params.id;
-            const company = await CompanyModel.getCompanyByID(id);
-            company ? res.status(200).json(company) : res.status(404).json({ error: 'Company not found' });
+            const company = await CompanyModel.findByPk(id);
+            company ? res.status(200).json(CompanyController.transformCompanyData(company)) : res.status(404).json({ error: 'Company not found' });
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });   
@@ -52,8 +82,9 @@ export class CompanyController {
             if (error) {
                 return res.status(400).json({ error: 'Company not found'})
             }
-            const updatedCompany = await CompanyModel.updateCompany(id, data);
-            return res.status(200).json(updatedCompany)
+            await CompanyModel.update(data, { where: { id } });
+            const updatedCompany = await CompanyModel.findByPk(id)
+            return res.status(200).json(CompanyController.transformCompanyData(updatedCompany))
 
         } catch (error) {
             console.error('Error:', error);
@@ -63,14 +94,24 @@ export class CompanyController {
 
     static async deleteCompany (req, res){
         try {
-            const id = req.params.id
-            const deletedCompany = await CompanyModel.deleteCompany(id);
-            deletedCompany
-                ? res.status(200).json({ 
-                    message: 'Company deleted successfully',
-                    deletedCompany
-                    })
-                : res.status(404).json({ error: 'Company not found' });
+            const { id } = req.params
+
+            const company = await CompanyModel.findByPk(id);
+
+            if (!company)
+                return res.status(404).json({ error: 'Company not found' });
+
+            const companyData = CompanyController.transformCompanyData(company)
+
+            await AppointmentModel.destroy({
+                where: { id },
+                individualHooks: true
+            })
+
+            return res.status(200).json({
+                message: 'Company deleted successfully',
+                deletedCompany: companyData
+            })
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });   
@@ -87,36 +128,6 @@ export class CompanyController {
             return res.status(500).json({ error: 'Internal server error' });   
         }
     }
-
-    static async addProfessionalToCompany(req, res) {
-        try {
-            const { id, professionalID } = req.params;
-
-            // Validación básica del formato
-            if (!isValidUUID(id) || !isValidUUID(professionalID)) {
-            return res.status(400).json({ error: "Invalid IDs" });
-            }
-
-            // Buscar empresa y profesional
-
-            const company = await CompanyModel.getCompanyByID(id);
-            const professional = await ProfessionalModel.getProfessionalByID(professionalID);
-
-            if (!company || !professional) {
-            return res.status(404).json({ error: "Company or professional not found" });
-            }
-
-            // Si se permiten roles personalizados desde el body (opcional)
-            const { roles } = req.body;
-            const staffMember = await CompanyModel.addProfessionalToCompany(id, professionalID, roles);
-
-            return res.status(201).json({ message: "Professional added to company", staffMember });
-
-        } catch (error) {
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-
 
     static async removeProfessionalFromCompany (req, res){
         try {

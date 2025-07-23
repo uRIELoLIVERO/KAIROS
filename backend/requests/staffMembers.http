@@ -1,5 +1,8 @@
+### Create StaffMember 
+POST http://localhost:3000/staff-members
+
 ### Actualizar disponibilidad de un profesional
-PUT http://localhost:3000/professionals/1/availability
+PUT http://localhost:3000/staff-members/1/availability
 Content-Type: application/json
 
 {
@@ -9,7 +12,7 @@ Content-Type: application/json
 }
 
 ### Agregar una excepción a la disponibilidad del profesional
-POST http://localhost:3000/professionals/1/exceptions
+POST http://localhost:3000/staff-members/1/exceptions
 Content-Type: application/json
 
 {
@@ -18,7 +21,7 @@ Content-Type: application/json
 }
 
 ### Obtener disponibilidad de un profesional
-GET http://localhost:3000/professionals/1/availability
+GET http://localhost:3000/staff-members/1/availability
 
 ### Obtener citas (appointments) del profesional
-GET http://localhost:3000/professionals/1/appointments
+GET http://localhost:3000/staff-members/1/appointments

@@ -18,12 +18,12 @@ GET {{baseUrl}}/services
 ###
 
 ### 🔹 Obtener servicio por ID
-GET {{baseUrl}}/services/fbdea3e3-2f67-4cef-9831-1da1b3d13cf9
+GET {{baseUrl}}/services/ba89b6b4-6748-11f0-b676-00ff1d8344ad
 
 ###
 
 ### 🔹 Actualizar servicio
-PUT {{baseUrl}}/services/fbdea3e3-2f67-4cef-9831-1da1b3d13cf9
+PUT {{baseUrl}}/services/ba89b6b4-6748-11f0-b676-00ff1d8344ad
 Content-Type: application/json
 
 {
@@ -36,4 +36,4 @@ Content-Type: application/json
 ###
 
 ### 🔹 Eliminar servicio
-DELETE {{baseUrl}}/services/fbdea3e3-2f67-4cef-9831-1da1b3d13cf9
+DELETE {{baseUrl}}/services/72228ec0-3762-4249-8893-fa54bcddd9b6

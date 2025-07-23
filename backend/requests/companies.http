@@ -28,12 +28,12 @@ GET http://localhost:3000/companies
 ###
 
 ### Get company by ID
-GET http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d
+GET http://localhost:3000/companies/ba7dfcf6-6748-11f0-b676-00ff1d8344ad
 
 ###
 
 ### Update a company
-PUT http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d
+PUT http://localhost:3000/companies/ba7dfcf6-6748-11f0-b676-00ff1d8344ad
 Content-Type: application/json
 
 {
@@ -43,43 +43,14 @@ Content-Type: application/json
 ###
 
 ### Delete a company
-DELETE http://localhost:3000/companies/33d8263c-ad58-4fea-8379-b4882ba4fae5
+DELETE http://localhost:3000/companies/ba7dfcf6-6748-11f0-b676-00ff1d8344ad
 
 ###
 
-### Get all professionals of a company
-GET http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/professionals
+### Get all professionals from a company (ISSUE)
+GET http://localhost:3000/companies/ba7dfa80-6748-11f0-b676-00ff1d8344ad/professionals
 
 ###
 
-### Get a specific professional from a company
-GET http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/professionals/f41a1257-819b-4029-ab33-68c9fea7b137
-
-###
-
-### Add a professional to a company
-POST http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/professionals/f41a1257-819b-4029-ab33-68c9fea7b137
-Content-Type: application/json
-
-{
-  "roles": ["professional"]
-}
-
-###
-
-### Remove a professional from a company
-DELETE http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/professionals/f41a1257-819b-4029-ab33-68c9fea7b137
-
-###
-
-### Get all services of a company
+### Get all services of a company  (ISSUE) 
 GET http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/services
-
-###
-
-### Add a service to a company
-POST http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/services/s1
-###
-
-### Remove a service from a company
-DELETE http://localhost:3000/companies/f2bf17ab-9d54-4e12-bd56-c5142cb0761d/services/s1

@@ -3,6 +3,10 @@ import { StaffMemberController } from '../controllers/staffMember.js';
 
 export const staffMemberRouter = Router();
 
+staffMemberRouter.post('/', StaffMemberController.createStaffMember)
+
+staffMemberRouter.post('/:id', StaffMemberController.deleteStaffMember)
+
 staffMemberRouter.get('/company/:companyId', StaffMemberController.getAllByCompany);
 
 staffMemberRouter.get('/:id/availability', StaffMemberController.getAvailability);
