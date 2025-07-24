@@ -7,7 +7,7 @@ Content-Type: application/json
   "icon": "https://chatgpt.com/c/68750c7a-2c18-800b-8d01-5b3090102cd1.png",
   "location": "Buenos Aires",
   "services": [],
-  "availability": [
+  "availabilityDays": [
     {
       "days": [
         {

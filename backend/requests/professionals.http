@@ -1,12 +1,12 @@
 ### Obtener información de un profesional por ID
-GET http://localhost:3000/professionals/f41a1257-819b-4029-ab33-68c9fea7b137
+GET http://localhost:3000/professionals/ba84710c-6748-11f0-b676-00ff1d8344ad
 
 ### Actualizar perfil del profesional (patch)
-PATCH http://localhost:3000/professionals/f41a1257-819b-4029-ab33-68c9fea7b137/profile
+PATCH http://localhost:3000/professionals/ba84710c-6748-11f0-b676-00ff1d8344ad/profile
 Content-Type: application/json
 
 {
-  "name": "Juan Pérez",
-  "phoneNumber": "+430123456789",
+  "firstName": "Juan Pérez",
+  "phoneNumber": "430123456789",
   "email": "juan@example.com"
 }
