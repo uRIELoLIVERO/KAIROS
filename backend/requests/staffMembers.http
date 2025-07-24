@@ -3,21 +3,23 @@ POST http://localhost:3000/staff-members
 Content-Type: application/json
 
 {
-  "companyId": 1,
-  "professionalId": 1,
-  "roleId": 1
+  "companyId": "ba7dfa80-6748-11f0-b676-00ff1d8344ad",
+  "professionalId": "ba847121-6748-11f0-b676-00ff1d8344ad"
 }
 
-### Eliminar staff member por ID
-DELETE http://localhost:3000/staff-members/1
-
 ### Obtener staff members de una compañía
-GET http://localhost:3000/staff-members/company/1
+GET http://localhost:3000/staff-members/company/ba7dfa80-6748-11f0-b676-00ff1d8344ad
+
+### Obtener staff member por id
+GET http://localhost:3000/staff-members/4f8e0e5d-8438-43d5-ad45-4b02c1c4cb4a
 
 ### Actualizar rol de un staff member
-PATCH http://localhost:3000/staff-members/1/role
+PATCH http://localhost:3000/staff-members/4f8e0e5d-8438-43d5-ad45-4b02c1c4cb4a/role
 Content-Type: application/json
 
 {
   "roleId": 2
 }
+
+### Eliminar staff member por ID
+DELETE http://localhost:3000/staff-members/4f8e0e5d-8438-43d5-ad45-4b02c1c4cb4a

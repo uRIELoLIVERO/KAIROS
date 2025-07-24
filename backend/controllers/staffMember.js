@@ -4,16 +4,16 @@ import { validatePartialStaffMember } from '../schemas/staffMember.js';
 import { AppointmentController } from './appointment.js';
 
 export class StaffMemberController {
-  static async transformStaffMemberData(staffMember) {
+  static transformStaffMemberData(staffMember) {
     const data = staffMember.toJSON ? staffMember.toJSON() : staffMember;
 
     const transformedData = {
       id: data.id,
       companyId: data.company_id || data.companyId,
       professionalId: data.professional_id || data.professionalId,
-      role: data.role,
-      availability: data.availability,
-      availabilityException: data.availability_exception || data.availabilityException,
+      roleId: data.role_id || data.roleId,
+      availabilityId: data.availability_id || data.availabilityId,
+      availabilityExceptionId: data.availability_exception_id || data.availabilityExceptionId,
       deletedAt: data.deleted_at || data.deletedAt
     }
 
@@ -28,22 +28,19 @@ export class StaffMemberController {
 
   static async createStaffMember(req, res) {
     try {
-      const { id, professionalID } = req.params;
-    
-      // Validación básica del formato
-      if (!isValidUUID(id) || !isValidUUID(professionalID)) {
-      return res.status(400).json({ error: "Invalid IDs" });
+
+      const resultStaffMember = validatePartialStaffMember(req.body);
+
+      if (!resultStaffMember.success) {
+      return res.status(400).json({ error: resultStaffMember.error.message });
       }
-    
-      const resultRole = validateRole(req.body)
-      if (!resultRole) {
-        return res.status(400).json({ error: resultRole.error.message })
-      }
-    
+
       // Buscar empresa y profesional
-    
-      const company = await CompanyModel.getCompanyByID(id);
-      const professional = await ProfessionalModel.getProfessionalByID(professionalID);
+      const { companyId, professionalId } = resultStaffMember.data
+      console.log(companyId, professionalId)
+
+      const company = await CompanyModel.findByPk(companyId);
+      const professional = await ProfessionalModel.findOne({ where: { id: professionalId } })
     
       if (!company || !professional) {
       return res.status(404).json({ error: "Company or professional not found" });
@@ -52,26 +49,22 @@ export class StaffMemberController {
       // Si se permiten roles personalizados desde el body (opcional)
       const staffMember = await StaffMemberModel.create({
           id: crypto.randomUUID(),
-          companyId: id,
-          professionalId: professionalID, 
-          role: resultRole,
+          companyId,
+          professionalId,
+          roleId: 1,
           availability: company.availability,
           availabilityException: company.availabilityException,
       });
     
-      const staffMemberData = StaffMemberController.transformStaffMemberData(staffMember)
-    
-      return res.status(201).json({ message: "Professional added to company", staffMemberData });
+      return res.status(201).json({ message: "Professional added to company", staffMember });
     
     } catch (error) {
-        return res.status(500).json({ error: 'Internal server error' });
+      console.error('Error', error)
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }  
 
-  static async deleteStaffMember(req, res) {
-    
-  }
-
+  
   static async getAllByCompany(req, res) {
     try {
       const { companyId } = req.params;
@@ -80,29 +73,29 @@ export class StaffMemberController {
         where: { companyId }
       });
 
-      return res.status(200).json((staff.map(s => StaffMemberController.transformStaffMemberData(s))));
+      return res.status(200).json(staff.map(s => StaffMemberController.transformStaffMemberData(s)));
     } catch (error) {
       console.error('Error in getAllByCompany:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
 
-  static async getAppointments(req, res) {
+  static async getStaffMemberById (req, res) {
     try {
       const { id } = req.params;
 
-      const appointments = await AppointmentModel.findAll({
-        where: { staffMemberId: id },
-        include: ['offeredService', 'client']
-      });
+      const staffMember = await StaffMemberModel.findByPk(id)
+      if (!staffMember) return res.status(400).json({ error: 'StaffMember not found'})
 
-      return res.status(200).json(AppointmentController.transformAppointmentData(appointments));
+      return res
+        .status(200)
+        .json(StaffMemberController.transformStaffMemberData(staffMember)) 
     } catch (error) {
-      console.error('Error in getAppointments:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error('Error:', error)
+      return res.status(500).json({ error: 'Internal server error'})
     }
   }
-
+  
   static async updateRole(req, res) {
     try {
       const { id } = req.params;
@@ -125,5 +118,31 @@ export class StaffMemberController {
       console.error('Error in updateRole:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
+  }
+
+  static async deleteStaffMember(req, res) {
+        try {
+            const { id } = req.params;
+
+            const staffMember = await StaffMemberModel.findByPk(id)
+            if (!staffMember) {
+              return res.status(404).json({ error: 'Staff member not found in this company' });
+            }
+
+            const staffMemberData = StaffMemberController.transformStaffMemberData(staffMember)
+
+            await StaffMemberModel.destroy({
+              where: { id },
+              individualHooks: true
+            })
+
+            return res.status(200).json({
+              message: 'Staff member deleted successfully',
+              deletedStaffMember: staffMemberData
+            })
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ error: 'Internal server error' });   
+        }
   }
 }

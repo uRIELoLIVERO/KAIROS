@@ -6,9 +6,9 @@ import { availabilityExceptionSchema } from './availabilityException.js'
 
 export const staffMemberSchema = z.object({
     id: z.string().uuid("Invalid UUID format"),
-    companyID: z.string().uuid("Invalid UUID format"),
-    ProfessionalID: z.string().uuid("Invalid UUID format"),
-    role: z.array(roleSchema),
+    companyId: z.string().uuid("Invalid UUID format"),
+    professionalId: z.string().uuid("Invalid UUID format"),
+    roleId: z.number().int().optional(),
     availability: z.array(availabilitySchema),
     availabilityException: z.array(availabilityExceptionSchema),
     deletedAt: z.string().datetime().optional().nullable() 

@@ -118,30 +118,6 @@ export class CompanyController {
         }
     }
 
-    static async getProfessionalByID (req, res){
-        try {
-            const { id, professionalID } = req.params;
-            const professional = await CompanyModel.getProfessionalByID(id, professionalID);
-            professional ? res.status(200).json(professional) : res.status(404).json({ error: 'Professional not founD'})
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Internal server error' });   
-        }
-    }
-
-    static async removeProfessionalFromCompany (req, res){
-        try {
-            const { id, professionalID } = req.params;
-            const deletedProfessional = await CompanyModel.removeProfessionalFromCompany(id, professionalID)
-            deletedProfessional
-                ? res.status(200).json({ message: 'Professional removed successfully' })
-                : res.status(404).json({ error: 'Professional not found in this company' });
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Internal server error' });   
-        }
-    }
-
     static async getAllServicesByCompany (req, res){
         try {
             const id = req.params.id;
@@ -156,61 +132,4 @@ export class CompanyController {
         }
     }
 
-    static async getServiceByID (req, res){
-        try {
-            const { id, serviceID } = req.params;
-            const service = await CompanyModel.getServiceByID(id, serviceID);
-            service ? res.status(200).json(service) : res.status(404).json({ error: 'Service not found'})
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Internal server error' });   
-        }
-    }
-
-    static async addServiceToCompany (req, res){
-        try {
-
-            const { id, serviceID } = req.params;
-            // Validación básica del formato
-            if (!isValidUUID(id) || !isValidUUID(serviceID)) {
-            return res.status(400).json({ error: "Invalid IDs" });
-            }
-
-            // Buscar empresa y profesional
-            const company = await CompanyModel.getCompanyByID(id);
-            const service = await ServiceModel.getServiceByID(serviceID);
-
-            if (!company || !service) {
-            return res.status(404).json({ error: "Company or service not found" });
-            }
-
-            // Evitar duplicados
-            if (company.services.includes(serviceID)) {
-            return res.status(400).json({ error: "Service already assigned to company" });
-            }
-
-            // Asignar
-            company.services.push(serviceID);
-            await CompanyModel.update(id, company);
-
-            return res.status(200).json({ message: "Service added successfully" });
-
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Internal server error' });   
-        }
-    }
-
-    static async removeServiceFromCompany (req, res){
-        try {
-            const { id, serviceID } = req.params;
-            const deletedCompany = await CompanyModel.removeServiceFromCompany(id, serviceID)
-            deletedCompany
-                ? res.status(200).json({ message: 'Service removed successfully' })
-                : res.status(404).json({ error: 'Service not found in this company' });
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Internal server error' });   
-        }
-    }
 }

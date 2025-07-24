@@ -5,8 +5,10 @@ export const staffMemberRouter = Router();
 
 staffMemberRouter.post('/', StaffMemberController.createStaffMember)
 
-staffMemberRouter.delete('/:id', StaffMemberController.deleteStaffMember)
-
 staffMemberRouter.get('/company/:companyId', StaffMemberController.getAllByCompany);
 
+staffMemberRouter.get('/:id', StaffMemberController.getStaffMemberById)
+
 staffMemberRouter.patch('/:id/role', StaffMemberController.updateRole);
+
+staffMemberRouter.delete('/:id', StaffMemberController.deleteStaffMember)
