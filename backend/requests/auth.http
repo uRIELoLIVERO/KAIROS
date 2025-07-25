@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:3000/auth
+
+### Registro de usuario
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "firstName": "Uriel",
+  "lastName" : "Olivero",
+  "email": "andoconunalocuradeesasquenosequitan@yahoo.com",
+  "phoneNumber" : "520252025202",
+  "password": "ahoraquierenseramigos1234"
+}
+
+### Inicio de sesión
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "andoconunalocuradeesasquenosequitan@yahoo.com",
+  "password": "ahoraquierenseramigos1234"
+}
+
+### Cerrar sesión
+POST {{baseUrl}}/logout
+Authorization: Bearer {eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzUzNDIwMDQ4LCJleHAiOjE3NTM1MDY0NDh9.K1_ceE-Dw4b3FXmzfEQ4Q6y0Ec6XjUZwZNUJ6JwgD5M}
+
+### Refrescar token
+POST {{baseUrl}}/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+### Olvidé contraseña
+POST {{baseUrl}}/forgot-password
+Content-Type: application/json
+
+{
+  "email": "andoconunalocuradeesasquenosequitan@yahoo.com"
+}
+
+### Resetear contraseña
+POST {{baseUrl}}/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset_token_recibido_por_email",
+  "newPassword": "nuevaContraseñaSegura456"
+}
+
+### Devuelve datos del usuario logueado
+GET {{baseUrl}}/me
+Content-Type: application/json

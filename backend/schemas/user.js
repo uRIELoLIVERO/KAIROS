@@ -19,8 +19,16 @@ export const userSchema = z.object({
     email: z.string().email('Invalid email format'),
     phoneNumber: phoneNumberSchema,
     password: z.string().min(6, 'Contraseña must be at least 6 characters long'),
-    globalRole: globalRoleSchema,
+    globalRole: z.number().int(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     deletedAt: z.string().datetime().optional().nullable()
 })
+
+export function validateUser(object) {
+    return userSchema.safeParse(object)
+}
+
+export function validatePartialUser(object) {
+    return userSchema.partial().safeParse(object)
+}

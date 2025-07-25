@@ -1,7 +1,6 @@
 import { StaffMemberModel, AppointmentModel, CompanyModel, ProfessionalModel } from '../models/sequelize/sequelize.js';
-
 import { validatePartialStaffMember } from '../schemas/staffMember.js';
-import { AppointmentController } from './appointment.js';
+import crypto from 'crypto';
 
 export class StaffMemberController {
   static transformStaffMemberData(staffMember) {
@@ -37,13 +36,12 @@ export class StaffMemberController {
 
       // Buscar empresa y profesional
       const { companyId, professionalId } = resultStaffMember.data
-      console.log(companyId, professionalId)
 
       const company = await CompanyModel.findByPk(companyId);
       const professional = await ProfessionalModel.findOne({ where: { id: professionalId } })
     
       if (!company || !professional) {
-      return res.status(404).json({ error: "Company or professional not found" });
+        return res.status(404).json({ error: "Company or professional not found" });
       }
     
       // Si se permiten roles personalizados desde el body (opcional)

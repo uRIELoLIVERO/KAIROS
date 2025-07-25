@@ -1,10 +1,6 @@
-import { isValidUUID } from '../utils/uuid.js';
-import { AppointmentModel, CompanyModel, ProfessionalModel, ServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
-import crypto from 'crypto';
+import { AppointmentModel, CompanyModel } from '../models/sequelize/sequelize.js';
 import { validateCompany, validatePartialCompany } from '../schemas/company.js';
-import { validateStatus } from '../schemas/status.js';
-import availability from '../models/sequelize/availability.js';
-import { StaffMemberController } from './staffMember.js';
+import crypto from 'crypto';
 
 
 export class CompanyController {

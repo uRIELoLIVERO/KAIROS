@@ -15,8 +15,11 @@ import { sequelize } from './models/sequelize/sequelize.js';
 import { Temporal } from '@js-temporal/polyfill';
 globalThis.Temporal = Temporal;
 
+import cookieParser from 'cookie-parser';
+
 const app = express();
 app.use(express.json());
+app.use(cookieParser())
 app.disable('x-powered-by');
 
 const PORT = process.env.PORT || 3000;

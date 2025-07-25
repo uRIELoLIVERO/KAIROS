@@ -3,6 +3,7 @@ import { validateAppointment, validatePartialAppointment } from '../schemas/appo
 import { validateStatus, validatePartialStatus } from '../schemas/status.js';
 import { validateClient } from '../schemas/client.js'
 import { AppointmentService } from '../services/appointment.js';
+import crypto from 'crypto';
 
 export class AppointmentController {
     // Data formatter for outputs
