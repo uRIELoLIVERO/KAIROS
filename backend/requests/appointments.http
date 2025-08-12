@@ -3,9 +3,10 @@ POST http://localhost:3000/appointments
 Content-Type: application/json
 
 {
-  "appointmentDateTime": "2025-07-10T14:00:00Z",
-  "offeredServiceId": "ba95ad50-6748-11f0-b676-00ff1d8344ad",
-  "client": {
+  "appointmentDateTime": "2025-08-12T13:00:00Z",
+  "offeredServiceId": "fb496378-e4a7-49ef-bb86-27c5bbe17ce1",
+  "client": 
+  {
     "firstName":"Valentin",
     "lastName": "Olivero",
     "phoneNumber": "54123456789",
@@ -32,7 +33,7 @@ GET http://localhost:3000/appointments/25513b9c-c111-4727-8a0a-94e430047153
 
 ### Obtener turnos del usuario logueado
 GET http://localhost:3000/appointments/me
-
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU0NTgxMjE1LCJleHAiOjE3NTQ2Njc2MTV9.WDy_fi0oyv4OQ3QEIVdigyasvF3lfwJ87upOYhbmnQo
 ###
 
 ### Obtener turnos por día
@@ -74,11 +75,12 @@ Content-Type: application/json
 ###
 
 ### Cambiar estado de un turno
-PATCH http://localhost:3000/appointments/ba977631-6748-11f0-b676-00ff1d8344ad/status
+PATCH http://localhost:3000/appointments/b176432f-8179-4a5d-a4bc-3e42b35558f4/status
 Content-Type: application/json
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU0NDU4MTAyLCJleHAiOjE3NTQ1NDQ1MDJ9.j8RJ1-enQyubXwmxi4odSkWbuB8XcjuQ-73hD7u2QpE
 
 {
-  "name": "CANCELLED"
+  "name": "PAID"
 }
 
 ###

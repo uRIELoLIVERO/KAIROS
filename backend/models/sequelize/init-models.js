@@ -1,22 +1,24 @@
 import _sequelize from "sequelize";
 const DataTypes = _sequelize.DataTypes;
-import _appointment from  "./appointment.js";
-import _availability from  "./availability.js";
-import _availability_day from  "./availability_day.js";
-import _availability_exception from  "./availability_exception.js";
-import _client from  "./client.js";
-import _company from  "./company.js";
-import _global_role from  "./global_role.js";
-import _offered_service from  "./offered_service.js";
-import _professional from  "./professional.js";
-import _role from  "./role.js";
-import _service from  "./service.js";
-import _staff_member from  "./staff_member.js";
-import _status from  "./status.js";
-import _time_slot from  "./time_slot.js";
-import _user from  "./user.js";
+import _appointment from "./appointment.js";
+import _availability from "./availability.js";
+import _availability_day from "./availability_day.js";
+import _availability_exception from "./availability_exception.js";
+import _client from "./client.js";
+import _company from "./company.js";
+import _global_role from "./global_role.js";
+import _offered_service from "./offered_service.js";
+import _professional from "./professional.js";
+import _role from "./role.js";
+import _service from "./service.js";
+import _staff_member from "./staff_member.js";
+import _status from "./status.js";
+import _time_slot from "./time_slot.js";
+import _user from "./user.js";
+import _payment from "./payment.js";
 
 export default function initModels(sequelize) {
+  // Inicialización de modelos
   const appointment = _appointment.init(sequelize, DataTypes);
   const availability = _availability.init(sequelize, DataTypes);
   const availability_day = _availability_day.init(sequelize, DataTypes);
@@ -32,39 +34,123 @@ export default function initModels(sequelize) {
   const status = _status.init(sequelize, DataTypes);
   const time_slot = _time_slot.init(sequelize, DataTypes);
   const user = _user.init(sequelize, DataTypes);
+  const payment = _payment.init(sequelize, DataTypes);
 
-  availability_day.belongsTo(availability, { foreignKey: "availability_id"});
-  availability.hasMany(availability_day, { foreignKey: "availability_id"});
-  staff_member.belongsTo(availability, { foreignKey: "availability_id"});
-  availability.hasMany(staff_member, { foreignKey: "availability_id"});
-  time_slot.belongsTo(availability_day, { foreignKey: "availability_day_id"});
-  availability_day.hasMany(time_slot, { foreignKey: "availability_day_id"});
-  staff_member.belongsTo(availability_exception, { foreignKey: "availability_exception_id"});
-  availability_exception.hasMany(staff_member, { foreignKey: "availability_exception_id"});
-  time_slot.belongsTo(availability_exception, { foreignKey: "availability_exception_id"});
-  availability_exception.hasMany(time_slot, { foreignKey: "availability_exception_id"});
-  appointment.belongsTo(client, { foreignKey: "client_id"});
-  client.hasMany(appointment, { foreignKey: "client_id"});
-  service.belongsTo(company, { foreignKey: "company_id"});
-  company.hasMany(service, { foreignKey: "company_id"});
-  staff_member.belongsTo(company, { foreignKey: "company_id"});
-  company.hasMany(staff_member, { foreignKey: "company_id"});
-  user.belongsTo(global_role, { foreignKey: "global_role_id"});
-  global_role.hasMany(user, { foreignKey: "global_role_id"});
-  appointment.belongsTo(offered_service, { foreignKey: "offered_service_id"});
-  offered_service.hasMany(appointment, { foreignKey: "offered_service_id"});
-  staff_member.belongsTo(professional, { foreignKey: "professional_id"});
-  professional.hasMany(staff_member, { foreignKey: "professional_id"});
-  staff_member.belongsTo(role, { foreignKey: "role_id"});
-  role.hasMany(staff_member, { foreignKey: "role_id"});
-  offered_service.belongsTo(service, { foreignKey: "service_id"});
-  service.hasMany(offered_service, { foreignKey: "service_id"});
-  offered_service.belongsTo(staff_member, { foreignKey: "staff_member_id"});
-  staff_member.hasMany(offered_service, { foreignKey: "staff_member_id"});
-  appointment.belongsTo(status, { foreignKey: "status_id"});
-  status.hasMany(appointment, { foreignKey: "status_id"});
-  professional.belongsTo(user, { foreignKey: "user_id"});
-  user.hasMany(professional, { foreignKey: "user_id"});
+  // Relaciones ORIGINALES (sin las añadidas por error)
+  availability_day.belongsTo(availability, { foreignKey: "availabilityId"});
+  availability.hasMany(availability_day, { foreignKey: "availabilityId"});
+  
+  staff_member.belongsTo(availability, { foreignKey: "availabilityId"});
+  availability.hasMany(staff_member, { foreignKey: "availabilityId"});
+  
+  time_slot.belongsTo(availability_day, { foreignKey: "availabilityDayId"});
+  availability_day.hasMany(time_slot, { foreignKey: "availabilityDayId"});
+
+  time_slot.belongsTo(availability_exception, { foreignKey: "availabilityExceptionId"});
+  availability_exception.hasMany(time_slot, { foreignKey: "availabilityExceptionId"});
+  
+  // SOLO ESTA RELACIÓN CON availability_exception EXISTE EN TU ORIGINAL
+  staff_member.belongsTo(availability_exception, { foreignKey: "availabilityExceptionId"});
+  availability_exception.hasMany(staff_member, { foreignKey: "availabilityExceptionId"});
+  
+  appointment.belongsTo(client, {
+    foreignKey: {
+      name: "clientId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  client.hasMany(appointment, { foreignKey: "clientId"});
+  
+  service.belongsTo(company, { foreignKey: "companyId"});
+  company.hasMany(service, { foreignKey: "companyId"});
+  
+  staff_member.belongsTo(company, {
+    foreignKey: {
+      name: "companyId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  company.hasMany(staff_member, { foreignKey: "companyId"});
+  
+  user.belongsTo(global_role, { foreignKey: "globalRoleId"});
+  global_role.hasMany(user, { foreignKey: "globalRoleId"});
+  
+  appointment.belongsTo(offered_service, {
+    foreignKey: {
+      name: "offeredServiceId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  offered_service.hasMany(appointment, { foreignKey: "offeredServiceId"});
+  
+  staff_member.belongsTo(professional, {
+    foreignKey: {
+      name: "professionalId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  professional.hasMany(staff_member, { foreignKey: "professionalId"});
+  
+  staff_member.belongsTo(role, {
+    foreignKey: {
+      name: "roleId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  role.hasMany(staff_member, { foreignKey: "roleId"});
+  
+  offered_service.belongsTo(service, {
+    foreignKey: {
+      name: "serviceId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  service.hasMany(offered_service, { foreignKey: "serviceId"});
+  
+  offered_service.belongsTo(staff_member, {
+    foreignKey: {
+      name: "staffMemberId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  staff_member.hasMany(offered_service, { foreignKey: "staffMemberId"});
+  
+  appointment.belongsTo(status, {
+    foreignKey: {
+      name: "statusId",
+      allowNull: false
+    },
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE"
+  });
+  status.hasMany(appointment, { foreignKey: "statusId"});
+  
+  professional.belongsTo(user, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false
+    },
+    onDelete: "CASCADE", 
+    onUpdate: "CASCADE"
+  });
+  user.hasMany(professional, { foreignKey: "userId"});
+  
+  payment.belongsTo(appointment, { foreignKey: "appointmentId" });
+  appointment.hasMany(payment, { foreignKey: "appointmentId" });
 
   return {
     appointment,
@@ -82,5 +168,6 @@ export default function initModels(sequelize) {
     status,
     time_slot,
     user,
+    payment,
   };
 }

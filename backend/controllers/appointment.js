@@ -1,4 +1,5 @@
-import { AppointmentModel, ClientModel, StatusModel, OfferedServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
+import { AppointmentModel, ClientModel, StatusModel, OfferedServiceModel, StaffMemberModel, ProfessionalModel, UserModel, CompanyModel
+ } from '../models/sequelize/sequelize.js';
 import { validateAppointment, validatePartialAppointment } from '../schemas/appointment.js';
 import { validateStatus, validatePartialStatus } from '../schemas/status.js';
 import { validateClient } from '../schemas/client.js'
@@ -52,11 +53,13 @@ export class AppointmentController {
             });
 
             const newAppointment = await AppointmentModel.create({
-            ...data,
-            id: crypto.randomUUID(),
-            statusId: 2,
-            clientId: client.id,
+                id: crypto.randomUUID(),
+                appointmentDateTime: data.appointmentDateTime,
+                offeredServiceId: data.offeredServiceId,
+                statusId: 1,
+                clientId: client.id
             });
+
 
             return res.status(201).json(AppointmentController.transformAppointmentData(newAppointment));
         } catch (error) {
@@ -94,13 +97,70 @@ export class AppointmentController {
     }
     
     static async getAppointmentsByLoggedUser(req, res) {
-        try {
-            // need to implement jwt to get user id
+    try {
+        const professional = await ProfessionalModel.findOne({
+            where: { userId: req.user.id }
+        });
+        if (!professional) return res.status(404).json({ error: 'Professional not found' });
+
+        const staffMembers = await StaffMemberModel.findAll({
+            where: { professionalId: professional.id }
+        });
+
+        const staffMemberIds = staffMembers.map(sm => sm.id);
+
+        const offeredServices = await OfferedServiceModel.findAll({
+            where: { staffMemberId: staffMemberIds }
+        });
+
+        const offeredServiceIds = offeredServices.map(os => os.id);
+
+        const appointments = await AppointmentModel.findAll({
+            where: { offeredServiceId: offeredServiceIds },
+            include: [
+                {
+                    model: OfferedServiceModel,
+                    attributes: ['id', 'customDuration', 'customPrice'],
+                    include: [
+                    {
+                        model: StaffMemberModel,
+                        attributes: ['id', 'companyId', 'professionalId'],
+                        include: [
+                        {
+                            model: ProfessionalModel,
+                            attributes: ['profilePicture'],
+                            include: [
+                            {
+                                model: UserModel,
+                                attributes: ['firstName', 'lastName']
+                            }
+                            ]
+                        },
+                        {
+                            model: CompanyModel,
+                            attributes: ['name', 'icon', 'location']
+                        }
+                        ]
+                    }
+                    ]
+                },
+                {
+                    model: ClientModel
+                },
+                {
+                    model: StatusModel
+                }
+            ],
+            order: [['appointmentDateTime', 'ASC']]
+        });
+
+        return res.status(200).json(appointments);
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error fetching appointments by logged user:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }
+
     
     static async getAppointmentsByDay(req, res) {
         try {

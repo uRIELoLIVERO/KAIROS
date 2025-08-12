@@ -1,5 +1,4 @@
-import z from "zod";
-import { statusSchema } from "./status.js";
+import { z } from "zod";
 
 const appointmentSchema = z.object({
     id: z.string().uuid("Invalid UUID format"),
@@ -14,9 +13,11 @@ const appointmentSchema = z.object({
 })
 
 export function validateAppointment (object) {
+  console.log('validateAppointment keys:', Object.keys(object));
   return appointmentSchema.safeParse(object)
 }
 
 export function validatePartialAppointment (object) {
+  console.log('validateParialAppointment keys:', Object.keys(object));
   return appointmentSchema.partial().safeParse(object)
 }

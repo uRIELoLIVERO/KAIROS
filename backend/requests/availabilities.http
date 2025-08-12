@@ -27,3 +27,32 @@ Content-Type: application/json
     }
   ]
 }
+
+### Obtener disponibilidad del usuario logueado
+GET http://localhost:3000/availabilities/me
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU0MjYzMDgyLCJleHAiOjE3NTQzNDk0ODJ9.v9hZnJK53S6ZaYVW1-U0ODiIeu6H16ZVsRAPv_iIEHs
+
+POST http://localhost:3000/availabilities
+Content-Type: application/json
+{
+  "availability_days": [
+    {
+      "dayOfWeek": "MONDAY",
+      "timeSlots": [
+        {
+            "startTime": "09:00",
+            "endTime": "17:00"
+        }
+      ]
+    },
+    {
+      "dayOfWeek": "TUESDAY",
+      "timeSlots": [
+        {
+            "startTime": "09:00",
+            "endTime": "17:00"
+        }
+      ]
+    }
+  ]
+}

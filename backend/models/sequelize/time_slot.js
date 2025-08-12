@@ -32,7 +32,7 @@ export default class time_slot extends Model {
     availabilityExceptionId: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      field: 'availability_day_id',
+      field: 'availability_exception_id',
       references: {
         model: 'availability_exception',
         key: 'id'

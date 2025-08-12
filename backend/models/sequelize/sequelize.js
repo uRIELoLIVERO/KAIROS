@@ -33,6 +33,7 @@ export const {
   status: StatusModel,
   time_slot: TimeSlotModel,
   user: UserModel,
+  payment: PaymentModel
 } = models;
 
 export { sequelize }

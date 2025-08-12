@@ -35,6 +35,7 @@ export default class appointment extends Model {
     statusId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      defaultValue: 1,
       field: 'status_id',
       references: {
         model: 'status',

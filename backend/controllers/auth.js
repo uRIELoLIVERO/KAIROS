@@ -1,11 +1,10 @@
 
 import { ProfessionalModel, UserModel } from '../models/sequelize/sequelize.js'
 import { validatePartialUser, validateUser } from '../schemas/user.js'
-import { ProfessionalController } from '../controllers/professional.js'
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -61,7 +60,7 @@ export class AuthController {
             return res.status(201).json({
                 message: 'Professional user created successfully',
                 user: AuthController.transformUserData(newUser),
-                professional: ProfessionalController.trasformProfessionalData(newProfessional)
+                professional: (newProfessional)
             });
 
         } catch (error) {
@@ -93,9 +92,9 @@ export class AuthController {
 
             // Firmar JWT
             const refreshToken = jwt.sign(
-            { id: user.id, globalRoleId: user.globalRoleId },
-            process.env.JWT_REFRESH_SECRET,
-            { expiresIn: '7d' }
+                { id: user.id, globalRoleId: user.globalRoleId },
+                process.env.JWT_REFRESH_SECRET,
+                { expiresIn: '7d' }
             );
 
             const accessToken = jwt.sign(
@@ -113,15 +112,15 @@ export class AuthController {
             });
             
             res.cookie('refresh_token', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: 'Strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: 'Strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
             });
 
             return res.status(200).json({
-            message: 'Logged in successfully',
-            user: AuthController.transformUserData(user)
+                message: 'Logged in successfully',
+                user: AuthController.transformUserData(user)
             });
         } catch (error) {
             console.error('Error:', error)

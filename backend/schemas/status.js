@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const statusEnum = z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED']);
+export const statusEnum = z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'PAID']);
 
 export const statusSchema = z.object({
     id: z.number().int().positive(), 

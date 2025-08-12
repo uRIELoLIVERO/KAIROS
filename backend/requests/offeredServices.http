@@ -3,7 +3,7 @@ POST http://localhost:3000/offered-services
 Content-Type: application/json
 
 {
-  "staffMemberId": "e3ccbdb8-5cfc-494e-896a-ba68764b224f",
+  "staffMemberId": "fcd468eb-032d-4a14-9f82-5a6ee99ad4d7",
   "serviceId": "72228ec0-3762-4249-8893-fa54bcddd9b6",
   "customPrice": 2500,
   "customDuration": 45,

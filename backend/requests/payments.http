@@ -1,0 +1,13 @@
+### Buscar todos los pagos de un turno
+GET http://localhost:3000/payments/25513b9c-c111-4727-8a0a-94e430047153
+
+### Agregar un pago (por ejemplo $1500)
+POST http://localhost:3000/payments/25513b9c-c111-4727-8a0a-94e430047153
+Content-Type: application/json
+
+{
+  "amount": 1500
+}
+
+### Eliminar el último pago
+DELETE http://localhost:3000/payments/25513b9c-c111-4727-8a0a-94e430047153

@@ -18,19 +18,19 @@ Content-Type: application/json
 
 {
   "email": "andoconunalocuradeesasquenosequitan@yahoo.com",
-  "password": "ahoraquierenseramigos1234"
+  "password": "nuevaContraseñaSegura456"
 }
 
 ### Cerrar sesión
 POST {{baseUrl}}/logout
-Authorization: Bearer {eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzUzNDIwMDQ4LCJleHAiOjE3NTM1MDY0NDh9.K1_ceE-Dw4b3FXmzfEQ4Q6y0Ec6XjUZwZNUJ6JwgD5M}
+Authorization: Bearer {eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzUzNDI2MTc2LCJleHAiOjE3NTM1MTI1NzZ9.d49E3yPM-Fm0Q5bvVOnmU1_oALjQLX5JSOmBM_CYWj0}
 
 ### Refrescar token
 POST {{baseUrl}}/refresh-token
 Content-Type: application/json
 
 {
-  "refreshToken": "{{refresh_token}}"
+  "refreshToken": "{eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzUzNDI2MTQ3LCJleHAiOjE3NTQwMzA5NDd9.4f5Q7-MSA79wrJebXj34H4bkM_YUaXDGPfOVwkqpvOg}"
 }
 
 ### Olvidé contraseña
@@ -46,7 +46,7 @@ POST {{baseUrl}}/reset-password
 Content-Type: application/json
 
 {
-  "token": "reset_token_recibido_por_email",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImlhdCI6MTc1MzQyNjIxNywiZXhwIjoxNzUzNDI3MTE3fQ.kiXQ-BSFQzFoMmEno38QvG7U1EJKkDVLbp52IsV6uJ0",
   "newPassword": "nuevaContraseñaSegura456"
 }
 

@@ -11,7 +11,7 @@ export default class status extends Model {
       primaryKey: true
     },
     name: {
-      type: DataTypes.ENUM('PENDING','CONFIRMED','CANCELLED','COMPLETED'),
+      type: DataTypes.ENUM('PENDING','CONFIRMED','CANCELLED','PAID'),
       allowNull: false
     }
   }, {

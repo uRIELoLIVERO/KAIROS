@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { AppointmentController } from '../controllers/appointment.js';
+import { authenticate } from '../middlewares/authenticate.js';
 
 export const appointmentsRouter = Router()
+
+appointmentsRouter.use(authenticate)
 
 // Create a new appointment
 appointmentsRouter.post('/', AppointmentController.createAppointment);

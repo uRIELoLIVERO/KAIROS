@@ -9,6 +9,7 @@ import { staffMemberRouter } from './routes/staffMember.js';
 import { availabilitiesRouter } from './routes/availabilities.js';
 import { availabilityExceptionsRouter } from './routes/availabilityExceptions.js';
 import { authRouter } from './routes/auth.js';
+import { paymentsRouter } from './routes/payments.js';
 
 import { sequelize } from './models/sequelize/sequelize.js';
 
@@ -17,9 +18,15 @@ globalThis.Temporal = Temporal;
 
 import cookieParser from 'cookie-parser';
 
+import cors from 'cors';
+
 const app = express();
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}))
 app.disable('x-powered-by');
 
 const PORT = process.env.PORT || 3000;
@@ -37,11 +44,15 @@ app.use('/staff-members', staffMemberRouter);
 app.use('/availabilities', availabilitiesRouter);
 app.use('/availability-exceptions', availabilityExceptionsRouter);
 app.use('/auth', authRouter);
+app.use('/payments', paymentsRouter);
 
 async function startServer() {
   try {
     await sequelize.authenticate();
     console.log('✅ Connection established successfully');
+
+    await sequelize.sync({ alter: true });
+    console.log('✅ All models were synchronized successfully.');
 
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);

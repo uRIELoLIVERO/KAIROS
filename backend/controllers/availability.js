@@ -1,5 +1,5 @@
 import { validateAvailability, validatePartialAvailability } from '../schemas/availability.js';
-import { AvailabilityModel, StaffMemberModel, AvailabilityDayModel, TimeSlotModel, sequelize } from '../models/sequelize/sequelize.js'
+import { AvailabilityModel, StaffMemberModel, AvailabilityDayModel, TimeSlotModel, sequelize, ProfessionalModel } from '../models/sequelize/sequelize.js'
 
 export class AvailabilityController {
   static async getAvailability(req, res) {
@@ -106,6 +106,62 @@ export class AvailabilityController {
       await t.rollback();
       console.error('Error in updateAvailability:', error);
       return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+static async getAvailabilityByLoggedUser(req, res) {
+    try {
+        // 1. Obtener el profesional asociado al usuario
+        const professional = await ProfessionalModel.findOne({
+            where: { userId: req.user.id }
+        });
+        if (!professional) {
+            return res.status(404).json({ error: 'Professional not found' });
+        }
+
+        // 2. Obtener los staff members del profesional
+        const staffMembers = await StaffMemberModel.findAll({
+            where: { professionalId: professional.id },
+            attributes: ['id', 'availability_id'] 
+        });
+
+        // 3. Filtrar staff members que tienen availability_id y extraer los IDs
+        const availabilityIds = staffMembers
+            .map(sm => sm.availability_id)
+            .filter(id => id !== null);
+
+        if (availabilityIds.length === 0) {
+            return res.status(200).json([]); // No hay disponibilidades
+        }
+
+        // 4. Obtener las disponibilidades con sus días y horarios
+        const availabilities = await AvailabilityModel.findAll({
+            where: { id: availabilityIds },
+            include: [
+                {
+                    model: AvailabilityDayModel,
+                    include: [
+                        {
+                            model: TimeSlotModel
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // 5. Mapear el resultado para incluir el staffMemberId
+        const result = availabilities.map(availability => {
+            const staffMember = staffMembers.find(sm => sm.availability_id === availability.id);
+            return {
+                staffMemberId: staffMember.id,
+                ...availability.toJSON()
+            };
+        });
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('Error in getAvailabilityByLoggedUser:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
   }
 }
