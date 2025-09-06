@@ -5,10 +5,11 @@ POST {{baseUrl}}/services
 Content-Type: application/json
 
 {
-  "name": "Masaje terapéutico",
+  "name": "Masaje terapéutico test v1",
   "description": "Masaje profundo para aliviar tensiones musculares",
   "suggestedPrice": 3500,
-  "suggestedDuration": 60
+  "suggestedDuration": 60,
+  "companyId": "ba7dfa80-6748-11f0-b676-00ff1d8344ad"
 }
 ###
 

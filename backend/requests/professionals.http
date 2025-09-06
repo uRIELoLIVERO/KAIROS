@@ -10,3 +10,6 @@ Content-Type: application/json
   "phoneNumber": "430123456789",
   "email": "juan@example.com"
 }
+
+### Obtener información de un profesional por ID de usuario
+GET http://localhost:3000/professionals/user/ba80ff81-6748-11f0-b676-00ff1d8344ad

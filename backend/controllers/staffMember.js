@@ -35,7 +35,7 @@ export class StaffMemberController {
       }
 
       // Buscar empresa y profesional
-      const { companyId, professionalId } = resultStaffMember.data
+      const { companyId, professionalId, roleId = 1 } = resultStaffMember.data
 
       const company = await CompanyModel.findByPk(companyId);
       const professional = await ProfessionalModel.findOne({ where: { id: professionalId } })
@@ -44,12 +44,11 @@ export class StaffMemberController {
         return res.status(404).json({ error: "Company or professional not found" });
       }
     
-      // Si se permiten roles personalizados desde el body (opcional)
       const staffMember = await StaffMemberModel.create({
           id: crypto.randomUUID(),
           companyId,
           professionalId,
-          roleId: 1,
+          roleId,
           availability: company.availability,
           availabilityException: company.availabilityException,
       });
@@ -69,6 +68,24 @@ export class StaffMemberController {
 
       const staff = await StaffMemberModel.findAll({
         where: { companyId }
+      });
+
+      return res.status(200).json(staff.map(s => StaffMemberController.transformStaffMemberData(s)));
+    } catch (error) {
+      console.error('Error in getAllByCompany:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+  
+  static async getAllByUser(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const professional = await ProfessionalModel.findOne({
+        where: { userId }
+      })
+      const staff = await StaffMemberModel.findAll({
+        where: { professionalId: professional.id }
       });
 
       return res.status(200).json(staff.map(s => StaffMemberController.transformStaffMemberData(s)));

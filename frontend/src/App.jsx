@@ -4,7 +4,9 @@ import LandingLayout from './layouts/LandingLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 
 import Calendar from './components/CalendarView';
-import Company from './components/CompanyView';
+// Importar desde tu nuevo index centralizado
+import { CompanySelectView, CompanyView } from './index.js';
+
 import Job from './components/JobView';
 import Help from './components/HelpView';
 import Settings from './components/SettingsView';
@@ -42,7 +44,8 @@ function AppRoutes() {
           }
         >
           <Route path="calendar" element={<Calendar />} />
-          <Route path="company" element={<Company />} />
+          <Route path="company" element={<CompanySelectView />} />
+          <Route path="company/:id" element={<CompanyView />} />
           <Route path="job" element={<Job />} />
           <Route path="help" element={<Help />} />
           <Route path="settings" element={<Settings />} />

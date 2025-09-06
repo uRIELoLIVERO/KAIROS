@@ -6,6 +6,7 @@ export const serviceSchema = z.object({
     description: z.string().optional(),
     suggestedPrice: z.number().positive("Price must be a positive number"),
     suggestedDuration: z.number().int().positive("Duration must be a positve integer"),
+    companyId: z.string().uuid('Invalid UUID format'),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     deletedAt: z.string().datetime().optional().nullable()    

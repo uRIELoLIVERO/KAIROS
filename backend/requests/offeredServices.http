@@ -13,6 +13,10 @@ Content-Type: application/json
 ### Obtener todos los servicios ofrecidos por un staff member
 GET http://localhost:3000/offered-services/e3ccbdb8-5cfc-494e-896a-ba68764b224f
 
+### Obtener todos los servicios ofrecidos por el usuario logeado
+GET http://localhost:3000/offered-services/my-offered-services
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU2Mzk1MTM1LCJleHAiOjE3NTY0ODE1MzV9.3gvgPQhXXaD-ESnYCrrNZU7Y1aU1PXEj9WsGcNkmQH4
+
 ### Actualizar un servicio ofrecido
 PUT http://localhost:3000/offered-services/bb4d742b-bd51-4afa-8931-537013dc4be6
 Content-Type: application/json

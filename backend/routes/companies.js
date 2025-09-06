@@ -1,9 +1,15 @@
 import { Router } from 'express';
 import { CompanyController } from '../controllers/company.js'
 import { StaffMemberController } from '../controllers/staffMember.js';
+import { authenticate } from '../middlewares/authenticate.js';
 
 export const companiesRouter = Router();
 
+companiesRouter.use(authenticate);
+
+
+//Get companies where the logged user is staffMember
+companiesRouter.get('/my-companies', CompanyController.getCompaniesByLoggedUser);
 // CRUD
 // Create a new company
 companiesRouter.post('/', CompanyController.createCompany);

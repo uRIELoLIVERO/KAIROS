@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Modal, TextField, Button, Typography, Stack, Alert } from "@mui/material";
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -91,50 +91,107 @@ export default function CalendarView() {
   // -----------------------
   // Helper: trae pagos de un turno
   // -----------------------
-  const fetchPaymentsForAppointment = async (appointmentId) => {
+  const fetchPaymentsForAppointment = useCallback(async (appointmentId) => {
     try {
       const res = await axios.get(`http://localhost:3000/payments/${appointmentId}`, {
         withCredentials: true
       });
-      // transformamos fechas a Date
       return res.data.map(p => ({
         id: p.id,
         amount: Number(p.amount),
-        // backend puede usar paymentDate / createdAt / date — cubrimos variantes
         date: p.paymentDate ? new Date(p.paymentDate) : (p.createdAt ? new Date(p.createdAt) : new Date())
       }));
     } catch (err) {
-      // Si no hay pagos devuelve 404 -> devolvemos []
       if (err.response && err.response.status === 404) return [];
       console.error(`Error fetching payments for appointment ${appointmentId}:`, err);
       return [];
     }
-  };
+  }, []);
+
+  // -----------------------
+  // Actualizar estado en backend
+  // -----------------------
+  const updateAppointmentStatus = useCallback(async (appointmentId, status) => {
+    try {
+      await axios.patch(
+        `http://localhost:3000/appointments/${appointmentId}/status`,
+        { name: status },
+        { withCredentials: true }
+      );
+      return true;
+    } catch (error) {
+      console.error('Error updating appointment status:', error);
+      return false;
+    }
+  }, []);
+
+  // -----------------------
+  // Actualizar fechas en backend
+  // -----------------------
+  const updateAppointmentDates = useCallback(async (appointmentId, start, end) => {
+    try {
+      await axios.patch(
+        `http://localhost:3000/appointments/${appointmentId}`,
+        {
+          appointmentDateTime: start,
+          duration: (end - start) / (1000 * 60) // duración en minutos
+        },
+        { withCredentials: true }
+      );
+      return true;
+    } catch (error) {
+      console.error('Error updating appointment dates:', error);
+      return false;
+    }
+  }, []);
 
   // -----------------------
   // Traer appointments sin pagos (los pagos se cargan al abrir el modal)
   // -----------------------
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
+      // 1. Obtener appointments
       const response = await axios.get('http://localhost:3000/appointments/me', {
         withCredentials: true
       });
 
       const appointments = response.data;
 
-      const baseEvents = appointments.map(appt => {
+      // 2. Para cada appointment, obtener sus pagos
+      const appointmentsWithPayments = await Promise.all(
+        appointments.map(async appt => {
+          const payments = await fetchPaymentsForAppointment(appt.id);
+          return { ...appt, payments };
+        })
+      );
+
+      // 3. Mapear a eventos para el calendario
+      const events = appointmentsWithPayments.map(appt => {
         const price = appt.offered_service?.customPrice || 0;
         const duration = appt.offered_service?.customDuration || 60;
+        const totalPaid = appt.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+        
+        // Determinar estado basado en pagos
+        const originalStatus = appt.status?.name || 'CONFIRMED';
+        let status = originalStatus;
+        if (totalPaid >= price) {
+          status = 'PAID';
+        } else if (totalPaid === 0) {
+          status = 'PENDING';
+        } else if (totalPaid > 0) {
+          status = 'CONFIRMED';
+        }
+
         return {
           raw: appt,
           id: appt.id,
           title: 'Turno reservado',
           start: new Date(appt.appointmentDateTime),
           end: addMinutes(new Date(appt.appointmentDateTime), duration),
-          status: appt.status?.name || 'CONFIRMED',
+          status,
           price,
-          totalPaid: 0, // se calculará cuando se carguen los pagos
-          payments: null, // null indica que no se han cargado aún
+          totalPaid,
+          payments: appt.payments,
           professionalName: appt.offered_service?.staff_member?.professional?.user
             ? `${appt.offered_service.staff_member.professional.user.firstName} ${appt.offered_service.staff_member.professional.user.lastName}`
             : 'Desconocido',
@@ -146,60 +203,54 @@ export default function CalendarView() {
         };
       });
 
-      setEvents(baseEvents);
-      return baseEvents;
+      setEvents(events);
     } catch (error) {
       console.error('Error al cargar turnos:', error);
-      throw error;
     }
-  };
+  }, [fetchPaymentsForAppointment]);
 
+  // Cargar datos iniciales
   useEffect(() => {
     fetchAppointments();
-  }, []);
+  }, [fetchAppointments]);
+
 
   // -----------------------
-  // Actualiza solo los pagos de un appointment en el estado
+  // Actualiza los pagos de un appointment y su estado
   // -----------------------
-  const updateEventPayments = (appointmentId, payments) => {
+  const updateEventPayments = useCallback(async (appointmentId, payments) => {
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    
+    // Encontrar el evento actual
+    const currentEvent = events.find(e => e.id === appointmentId);
+    if (!currentEvent) return;
+
+    // Determinar nuevo estado
+    let newStatus = currentEvent.raw.status?.name || 'CONFIRMED';
+    if (totalPaid >= currentEvent.price) {
+      newStatus = 'PAID';
+    } else if (totalPaid > 0) {
+      newStatus = 'CONFIRMED';
+    }
+
+    // Actualizar estado en backend si cambió
+    if (newStatus !== currentEvent.status) {
+      await updateAppointmentStatus(appointmentId, newStatus);
+    }
+
+    // Actualizar estado local
     setEvents(prev => prev.map(ev => {
       if (ev.id !== appointmentId) return ev;
-      
-      const totalPaid = payments.reduce((s, p) => s + Number(p.amount), 0);
-      const originalStatus = ev.raw.status?.name || 'CONFIRMED'; // Estado original del backend
-      
-      // Lógica mejorada para determinar el estado
-      let status;
-      if (totalPaid >= ev.price) {
-        status = 'PAID';
-      } else if (totalPaid > 0) {
-        status = 'CONFIRMED'; // Tiene pagos parciales
-      } else {
-        status = originalStatus; // Vuelve al estado original si no hay pagos
-      }
-
-      return { ...ev, payments, totalPaid, status };
+      return { ...ev, payments, totalPaid, status: newStatus };
     }));
 
     // Actualizar selectedEvent si corresponde
     setSelectedEvent(prev => {
       if (!prev || prev.id !== appointmentId) return prev;
-      
-      const totalPaid = payments.reduce((s, p) => s + Number(p.amount), 0);
-      const originalStatus = prev.raw.status?.name || 'CONFIRMED';
-      
-      let status;
-      if (totalPaid >= prev.price) {
-        status = 'PAID';
-      } else if (totalPaid > 0) {
-        status = 'CONFIRMED';
-      } else {
-        status = originalStatus;
-      }
-
-      return { ...prev, payments, totalPaid, status };
+      return { ...prev, payments, totalPaid, status: newStatus };
     });
-  };
+  }, [events, updateAppointmentStatus]);
+
 
   // -----------------------
   // Añadir pago
@@ -209,11 +260,15 @@ export default function CalendarView() {
     setIsProcessingPayment(true);
     try {
       const amountNumber = Number(amount);
-      await axios.post(`http://localhost:3000/payments/${appointmentId}`, { amount: amountNumber }, { withCredentials: true });
+      await axios.post(
+        `http://localhost:3000/payments/${appointmentId}`,
+        { amount: amountNumber },
+        { withCredentials: true }
+      );
 
-      // Traer pagos actualizados del appointment
+      // Traer pagos actualizados
       const payments = await fetchPaymentsForAppointment(appointmentId);
-      updateEventPayments(appointmentId, payments);
+      await updateEventPayments(appointmentId, payments);
 
       setPaymentAmount('');
     } catch (err) {
@@ -231,26 +286,14 @@ export default function CalendarView() {
 
     setIsProcessingPayment(true);
     try {
-      // Primero obtenemos los pagos actuales
-      const currentPayments = await fetchPaymentsForAppointment(appointmentId);
-      if (currentPayments.length === 0) return;
+      await axios.delete(
+        `http://localhost:3000/payments/${appointmentId}`,
+        { withCredentials: true }
+      );
 
-      // Obtenemos el ID del último pago
-      const lastPaymentId = currentPayments[currentPayments.length - 1].id;
-      
-      // Eliminamos el último pago usando su ID específico
-      await axios.delete(`http://localhost:3000/payments/${appointmentId}`, { 
-        withCredentials: true 
-      });
-
-      // Actualizamos con los pagos restantes
+      // Actualizar con los pagos restantes
       const updatedPayments = await fetchPaymentsForAppointment(appointmentId);
-      updateEventPayments(appointmentId, updatedPayments);
-
-      // Mostrar feedback al usuario
-      if (updatedPayments.length === 0) {
-        console.log('Todos los pagos han sido eliminados');
-      }
+      await updateEventPayments(appointmentId, updatedPayments);
     } catch (err) {
       console.error('Error al eliminar pago:', err);
     } finally {
@@ -258,95 +301,34 @@ export default function CalendarView() {
     }
   };
 
-  // -----------------------
-  // UI handlers del calendario
-  // -----------------------
-  const handleSelectSlot = async ({ start, end }) => {
-    const title = window.prompt('Título del evento:');
-    if (title) {
-      try {
-        // Crear el nuevo turno en el backend
-        const response = await axios.post('http://localhost:3000/appointments', {
-          title,
-          start,
-          end,
-          // Agrega aquí otros campos necesarios para crear el turno
-        }, { withCredentials: true });
-
-        // Actualizar el estado local con el nuevo turno
-        const newAppointment = response.data;
-        const newEvent = {
-          raw: newAppointment,
-          id: newAppointment.id,
-          title: newAppointment.title || 'Turno reservado',
-          start: new Date(newAppointment.appointmentDateTime),
-          end: addMinutes(new Date(newAppointment.appointmentDateTime), newAppointment.duration || 60),
-          status: newAppointment.status?.name || 'CONFIRMED',
-          price: newAppointment.price || 0,
-          totalPaid: 0,
-          payments: null,
-          professionalName: 'Nuevo profesional', // Actualiza según tu estructura
-          clientName: 'Nuevo cliente', // Actualiza según tu estructura
-          companyName: 'Nueva empresa', // Actualiza según tu estructura
-          companyLocation: 'Nueva ubicación', // Actualiza según tu estructura
-        };
-
-        setEvents(prev => [...prev, newEvent]);
-      } catch (error) {
-        console.error('Error al crear el turno:', error);
-        alert('Error al crear el turno');
-      }
-    }
-  };
-
-  const handleSelectEvent = async (event) => {
-    // Si los pagos no están cargados, los cargamos ahora
-    if (event.payments === null) {
-      setIsProcessingPayment(true);
-      try {
-        const payments = await fetchPaymentsForAppointment(event.id);
-        const totalPaid = payments.reduce((s, p) => s + Number(p.amount), 0);
-        
-        // Usamos la misma lógica de estado que en updateEventPayments
-        const originalStatus = event.raw.status?.name || 'CONFIRMED';
-        let status;
-        if (totalPaid >= event.price) {
-          status = 'PAID';
-        } else if (totalPaid > 0) {
-          status = 'CONFIRMED';
-        } else {
-          status = originalStatus;
-        }
-        
-        const updatedEvent = { ...event, payments, totalPaid, status };
-        setSelectedEvent(updatedEvent);
-        
-        // Actualizamos también en el estado general
-        setEvents(prev => prev.map(ev => 
-          ev.id === event.id ? updatedEvent : ev
-        ));
-      } catch (err) {
-        console.error('Error al cargar pagos:', err);
-      } finally {
-        setIsProcessingPayment(false);
-      }
-    } else {
-      setSelectedEvent(event);
-    }
-    
+  const handleSelectEvent = (event) => {
+    // Ya no necesitamos cargar los pagos aquí porque se cargan al inicio
+    setSelectedEvent(event);
     setIsModalOpen(true);
   };
 
-  const handleEventResize = ({ event, start, end }) => {
-    setEvents(prev => prev.map(e =>
-      e.id === event.id ? { ...e, start, end } : e
-    ));
+  const handleEventResize = async ({ event, start, end }) => {
+    const success = await updateAppointmentDates(event.id, start, end);
+    if (success) {
+      setEvents(prev => prev.map(e =>
+        e.id === event.id ? { ...e, start, end } : e
+      ));
+    } else {
+      // Revertir cambios si falla la actualización en backend
+      fetchAppointments();
+    }
   };
 
-  const handleEventDrop = ({ event, start, end }) => {
-    setEvents(prev => prev.map(e =>
-      e.id === event.id ? { ...e, start, end } : e
-    ));
+  const handleEventDrop = async ({ event, start, end }) => {
+    const success = await updateAppointmentDates(event.id, start, end);
+    if (success) {
+      setEvents(prev => prev.map(e =>
+        e.id === event.id ? { ...e, start, end } : e
+      ));
+    } else {
+      // Revertir cambios si falla la actualización en backend
+      fetchAppointments();
+    }
   };
 
   // -----------------------
@@ -381,7 +363,6 @@ export default function CalendarView() {
         resizable
         draggableAccessor={() => true}
 
-        onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
         onEventResize={handleEventResize}
         onEventDrop={handleEventDrop}

@@ -22,6 +22,9 @@ import {
 } from '@mui/icons-material'
 import logoKairos from '../assets/logoKairosApp.png'
 import { alpha } from '@mui/material/styles';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios';
 
 const navSections = [
   {
@@ -35,14 +38,64 @@ const navSections = [
   {
     title: 'Apoyo',
     items: [
-      { icon: <HelpOutline />, label: 'Ayuda', to: '/app/help/settings' },
-      { icon: <Logout />, label: 'Cerrar Sesion', to: '/' },
-    ],
+      { icon: <HelpOutline />, label: 'Ayuda', to: '/app/help/' },
+    ]
   },
+  {
+    title: 'Usuario',
+    items: [
+      { icon: <Settings />, label: 'Configuracion', to: '/app/settings' },
+      { icon: <Logout />, label: 'Cerrar Sesion', to: '/' },
+    ]
+  }
 ]
 
 export default function Sidebar({ open, setOpen }) {
   const theme = useTheme()
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null) 
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const { data: meData } = await axios.get('http://localhost:3000/auth/me', {
+          withCredentials: true
+        });
+
+        const userId = meData.user.id;
+
+        const { data: professionalData } = await axios.get(
+          `http://localhost:3000/professionals/user/${userId}`,
+          { withCredentials: true }
+        );
+
+        setUser({
+          name: `${professionalData.user.firstName} ${professionalData.user.lastName}`,
+          email: professionalData.user.email,
+          avatar:
+            professionalData.profilePicture ||
+            'https://www.pngkey.com/maxpic/u2q8u2w7e6y3r5y3/'
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        'http://localhost:3000/auth/logout',
+        {},
+        { withCredentials: true }
+      );
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out', error);
+    }
+  };
 
   return (
     <Drawer
@@ -58,6 +111,7 @@ export default function Sidebar({ open, setOpen }) {
         },
       }}
     >
+    {/* Header */}
       <Box
         display="flex"
         alignItems="center"
@@ -90,6 +144,7 @@ export default function Sidebar({ open, setOpen }) {
         </IconButton>
       </Box>
 
+    {/*Secciones*/}
       {navSections.map((section) => (
         <Box key={section.title} px={open ? 2 : 1} >
           {open 
@@ -115,6 +170,7 @@ export default function Sidebar({ open, setOpen }) {
             {section.items.map((item) => (
               <ListItemButton
                 key={item.label}
+                onClick={item.label === 'Cerrar Sesion' ? handleLogout : undefined}
                 to={item.to}
                 sx={{
                   px: 1.5,
@@ -137,9 +193,9 @@ export default function Sidebar({ open, setOpen }) {
           </List>
         </Box>
       ))}
-
       <Box flexGrow={1} />
 
+    {/*Usuario*/}
       <Box
         display="flex"
         alignItems="center"
@@ -148,7 +204,7 @@ export default function Sidebar({ open, setOpen }) {
         borderTop="1px solid rgba(255,255,255,0.1)"
       >
         <Avatar
-          src="https://i.pravatar.cc/150?img=11"
+          src={user?.avatar}
           sx={{ width: 36, height: 36 }}
         />
         {open && (
@@ -158,7 +214,7 @@ export default function Sidebar({ open, setOpen }) {
               color="white"
               noWrap
             >
-              Sam Wheeler
+              {user?.name || 'Cargando...'}
             </Typography>
             <Typography
               variant="md"
@@ -166,7 +222,7 @@ export default function Sidebar({ open, setOpen }) {
               noWrap
               sx={{ fontSize: '0.75rem' }}
             >
-              samwheeler@example.com
+              {user?.email || ''}
             </Typography>
           </Box>
         )}

@@ -10,6 +10,7 @@ import { availabilitiesRouter } from './routes/availabilities.js';
 import { availabilityExceptionsRouter } from './routes/availabilityExceptions.js';
 import { authRouter } from './routes/auth.js';
 import { paymentsRouter } from './routes/payments.js';
+import { userRouter } from './routes/users.js'
 
 import { sequelize } from './models/sequelize/sequelize.js';
 
@@ -45,6 +46,7 @@ app.use('/availabilities', availabilitiesRouter);
 app.use('/availability-exceptions', availabilityExceptionsRouter);
 app.use('/auth', authRouter);
 app.use('/payments', paymentsRouter);
+app.use('/users', userRouter)
 
 async function startServer() {
   try {

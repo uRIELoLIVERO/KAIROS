@@ -7,7 +7,7 @@ export class ProfessionalController {
       const { id } = req.params;
 
       const professional = await ProfessionalModel.findByPk(id, {
-        include: ['user'] // incluir datos del usuario si están relacionados
+        include: ['user']
       });
 
       if (!professional) {
@@ -73,4 +73,23 @@ export class ProfessionalController {
     }
   }
 
+  static async getProfessionalByUserId(req, res) {
+        try {
+      const { id } = req.params;
+
+      const professional = await ProfessionalModel.findOne({
+            where: { userId: id },
+            include: ['user']
+        });
+
+      if (!professional) {
+        return res.status(404).json({ error: 'Professional not found' });
+      }
+
+      return res.status(200).json(professional);
+    } catch (error) {
+      console.error('Error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }

@@ -5,3 +5,4 @@ export const professionalsRouter = Router();
 
 professionalsRouter.get('/:id', ProfessionalController.getProfessionalById);
 professionalsRouter.patch('/:id/profile', ProfessionalController.updateProfessional);
+professionalsRouter.get('/user/:id', ProfessionalController.getProfessionalByUserId);

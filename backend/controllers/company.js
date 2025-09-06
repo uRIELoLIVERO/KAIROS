@@ -1,13 +1,14 @@
-import { AppointmentModel, CompanyModel } from '../models/sequelize/sequelize.js';
+import { AppointmentModel, CompanyModel, ProfessionalModel, ServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
 import { validateCompany, validatePartialCompany } from '../schemas/company.js';
 import crypto from 'crypto';
-
+import { Op } from 'sequelize';
 
 export class CompanyController {
         static transformCompanyData(company) {
         const data = company.toJSON ? company.toJSON() : company;
         
         const transformedData = {
+            id: data.id,
             name: data.name,
             icon: data.icon,
             location: data.location,
@@ -38,9 +39,17 @@ export class CompanyController {
                 id: crypto.randomUUID(),
             });
 
-            // When you create a company, you are assigned the role of Owner by default
+            const professional = await ProfessionalModel.findOne({ where: {userId: req.user.id}})
 
-            return res.status(201).json(CompanyController.transformCompanyData(newCompany));            
+            const newOwner = await StaffMemberModel.create({
+                id: crypto.randomUUID(),
+                professionalId: professional.id,
+                companyId: newCompany.id,
+                roleId: 4 
+            })
+            
+
+            return res.status(201).json('Company created', CompanyController.transformCompanyData(newCompany), '\n And you added like the owner:', newOwner);            
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });   
@@ -117,7 +126,7 @@ export class CompanyController {
     static async getAllServicesByCompany (req, res){
         try {
             const id = req.params.id;
-            const services = await CompanyModel.getAllServicesByCompany(id);
+            const services = await ServiceModel.findAll({ where: {companyId: id}});
             if (services.length === 0) {
                 return res.status(404).json({ error: 'No services found for this company' });
             }
@@ -125,6 +134,40 @@ export class CompanyController {
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });   
+        }
+    }
+
+    static async getCompaniesByLoggedUser(req, res) {
+        try {
+            // 1. Obtener el profesional asociado al usuario
+            const professional = await ProfessionalModel.findOne({
+                where: { userId: req.user.id }
+            });
+            if (!professional) {
+                return res.status(404).json({ error: 'Professional not found' });
+            }
+
+            // 2. Obtener los staff members del profesional
+            const staffMembers = await StaffMemberModel.findAll({
+                where: { professionalId: professional.id }
+            });
+
+            if (staffMembers.length === 0) {
+                return res.status(404).json({ error: 'No staff members found' });
+            }
+
+            // 3. Extraer los companyId únicos
+            const companyIds = [...new Set(staffMembers.map(sm => sm.companyId))];
+
+            // 4. Obtener todas las compañías correspondientes
+            const companies = await CompanyModel.findAll({
+                where: { id: { [Op.in]: companyIds } }
+            });
+
+            return res.status(200).json(companies.map(c => CompanyController.transformCompanyData(c)));
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
         }
     }
 

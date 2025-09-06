@@ -232,7 +232,6 @@ export class AuthController {
 
     static async me(req, res) {
         try {
-            console.log(req.user)
             const user = await UserModel.findByPk(req.user.id);
             if (!user) return res.status(404).json({ error: 'User not found' });
 

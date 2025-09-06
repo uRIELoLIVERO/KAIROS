@@ -3,7 +3,7 @@ POST http://localhost:3000/appointments
 Content-Type: application/json
 
 {
-  "appointmentDateTime": "2025-08-12T13:00:00Z",
+  "appointmentDateTime": "2025-08-13T13:00:00Z",
   "offeredServiceId": "fb496378-e4a7-49ef-bb86-27c5bbe17ce1",
   "client": 
   {

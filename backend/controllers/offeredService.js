@@ -1,6 +1,6 @@
-import { OfferedServiceModel, ServiceModel } from '../models/sequelize/sequelize.js'
+import { OfferedServiceModel, ServiceModel, ProfessionalModel, StaffMemberModel, CompanyModel } from '../models/sequelize/sequelize.js'
 import { validateOfferedService, validatePartialOfferedService } from '../schemas/offeredService.js'
-
+import { Op } from 'sequelize';
 export class OfferedServiceController {
     // Data formatter for outputs
     static transformOfferedServiceData(offeredService) {
@@ -23,7 +23,6 @@ export class OfferedServiceController {
             deletedAt: data.deleted_at || data.deletedAt
         };
         
-        // Use custom values if defined, otherwise use suggested values from service
         transformedData.name = transformedData.customName || transformedData.suggestedName;
         transformedData.description = transformedData.customDescription || transformedData.suggestedDescription;
         transformedData.duration = transformedData.customDuration || transformedData.suggestedDuration;
@@ -155,6 +154,53 @@ export class OfferedServiceController {
                 error: 'Internal server error',
                 details: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
+        }
+    }
+
+    static async getMyOfferedServices(req, res) {
+        try {
+            // 1. Obtener el profesional asociado al usuario
+            const professional = await ProfessionalModel.findOne({
+                where: { userId: req.user.id }
+            });
+            if (!professional) {
+                return res.status(404).json({ error: 'Professional not found' });
+            }
+            
+            // 2. Obtener los staff members del profesional
+            const staffMembers = await StaffMemberModel.findAll({
+                where: { professionalId: professional.id }
+            });
+            
+            if (staffMembers.length === 0) {
+                return res.status(404).json({ error: 'No staff members found' });
+            }
+
+            // 3. Obtener los offeredServices de los staffMembers
+            const offeredServices = await OfferedServiceModel.findAll({
+                where: { staffMemberId: { [Op.in]: staffMembers.map(sm => sm.id) } },
+                include: [
+                    {
+                        model: ServiceModel,
+                        include: [
+                            {
+                                model: CompanyModel,
+                                attributes: ['id', 'name']
+                            }
+                        ]
+                    }
+                ],
+                raw: false
+            });
+            
+            if (offeredServices.length === 0) {
+                return res.status(404).json({ error: 'No offered services found for this professional' });
+            }
+            
+            return res.status(200).json(offeredServices);
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
         }
     }
 }
