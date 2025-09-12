@@ -2,9 +2,54 @@ import { AppointmentModel, CompanyModel, ProfessionalModel, ServiceModel, StaffM
 import { validateCompany, validatePartialCompany } from '../schemas/company.js';
 import crypto from 'crypto';
 import { Op } from 'sequelize';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+// Configuración de multer para almacenamiento de archivos (FUERA de la clase)
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = 'uploads/company-icons/';
+        // Crear directorio si no existe
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        // Nombre único para el archivo
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'company-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+// Filtrar solo imágenes
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Solo se permiten archivos de imagen'), false);
+    }
+};
+
+// Exportar upload como constante separada (FUERA de la clase)
+export const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // Límite de 5MB
+    }
+});
+
+// Solución para __dirname en ES Modules
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export class CompanyController {
-        static transformCompanyData(company) {
+
+    static transformCompanyData(company) {
         const data = company.toJSON ? company.toJSON() : company;
         
         const transformedData = {
@@ -83,16 +128,40 @@ export class CompanyController {
     static async updateCompany (req, res){
         try {
             const id = req.params.id;
+
+            // Procesar la imagen si se subió
+            if (req.file) {
+                // Guardar la ruta de la imagen en el body
+                req.body.icon = `/uploads/company-icons/${req.file.filename}`;
+                
+                // Si ya tenía una imagen anterior, eliminarla
+                if (req.body.oldIcon) {
+                    const oldPath = path.join(__dirname, '..', 'public', req.body.oldIcon);
+                    if (fs.existsSync(oldPath)) {
+                        fs.unlinkSync(oldPath);
+                    }
+                }
+            }
+
             const { error, data } = validatePartialCompany(req.body);
             if (error) {
-                return res.status(400).json({ error: 'Company not found'})
+                if (req.file) {
+                    fs.unlinkSync(req.file.path);
+                }
+                return res.status(400).json({ error: 'Datos inválidos' });
             }
+            
             await CompanyModel.update(data, { where: { id } });
-            const updatedCompany = await CompanyModel.findByPk(id)
-            return res.status(200).json(CompanyController.transformCompanyData(updatedCompany))
+            const updatedCompany = await CompanyModel.findByPk(id);
+            
+            return res.status(200).json(CompanyController.transformCompanyData(updatedCompany));
 
         } catch (error) {
             console.error('Error:', error);
+            // Si hay un error, eliminar el archivo subido (si existe)
+            if (req.file) {
+                fs.unlinkSync(req.file.path);
+            }
             return res.status(500).json({ error: 'Internal server error' });   
         }
     }

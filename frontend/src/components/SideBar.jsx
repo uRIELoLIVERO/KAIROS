@@ -73,8 +73,7 @@ export default function Sidebar({ open, setOpen }) {
           name: `${professionalData.user.firstName} ${professionalData.user.lastName}`,
           email: professionalData.user.email,
           avatar:
-            professionalData.profilePicture ||
-            'https://www.pngkey.com/maxpic/u2q8u2w7e6y3r5y3/'
+            professionalData.profilePicture
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -204,7 +203,8 @@ export default function Sidebar({ open, setOpen }) {
         borderTop="1px solid rgba(255,255,255,0.1)"
       >
         <Avatar
-          src={user?.avatar}
+          alt="Foto de perfil"
+          src={`http://localhost:3000${user?.avatar}`}
           sx={{ width: 36, height: 36 }}
         />
         {open && (

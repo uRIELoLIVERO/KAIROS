@@ -6,7 +6,7 @@ import { availabilityExceptionSchema } from './availabilityException.js';
 const companySchema = z.object({
     id: z.string().uuid('ID must be a valid UUID'),
     name: z.string().min(3, "Name must be at least 3 characters long"),
-    icon: z.string().url("Icon must be a valid URL"),
+    icon: z.any().optional(),
     location: z.string('Location must be a string'),
     services: z.array(serviceSchema, 'Services must be an array of serviceSs'),
     availability: z.array(availabilitySchema, 'Availability must be an array of availability objects'),

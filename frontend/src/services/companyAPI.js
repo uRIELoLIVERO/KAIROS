@@ -50,7 +50,12 @@ class CompanyAPI {
     const { data } = await axios.patch(
       `http://localhost:3000/companies/${companyId}`, 
       updateData,
-      { withCredentials: true }
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true
+      }
     );
     return data;
   }

@@ -17,6 +17,20 @@ class ProfessionalAPI {
         return data
     }
 
+    static async updateProfessional(professionalId, professionalData) {
+        const { data } = await axios.patch(
+            `http://localhost:3000/professionals/${professionalId}/profile`, 
+            professionalData,
+            {
+                headers: {
+                'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true
+            }
+        );
+        return data;
+    }
+
 }
 
 export default ProfessionalAPI

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { CompanyController } from '../controllers/company.js'
+import { CompanyController, upload } from '../controllers/company.js'
 import { StaffMemberController } from '../controllers/staffMember.js';
 import { authenticate } from '../middlewares/authenticate.js';
 
@@ -21,7 +21,7 @@ companiesRouter.get('/', CompanyController.getAllCompanies);
 companiesRouter.get('/:id', CompanyController.getCompanyByID);
 
 // Update an existing company by ID
-companiesRouter.put('/:id', CompanyController.updateCompany);
+companiesRouter.patch('/:id', upload.single('icon'), CompanyController.updateCompany);
 
 // Delete a company by ID
 companiesRouter.delete('/:id', CompanyController.deleteCompany);

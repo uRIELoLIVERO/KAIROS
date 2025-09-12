@@ -7,23 +7,17 @@ import {
   Stack,
   Grid,
   CircularProgress,
-  Avatar
+  Avatar,
+  Alert
 } from "@mui/material";
 
-/**
- * Tab para gestionar la configuración de la empresa
- * @param {Object} props - Props del componente
- * @param {Object} props.company - Datos de la empresa
- * @param {boolean} props.canEdit - Si el usuario puede editar la configuración
- * @param {Function} props.onUpdate - Función para actualizar la empresa (recibe FormData si hay archivo)
- * @returns {JSX.Element} Tab de configuración
- */
 const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const [form, setForm] = useState({
     name: "",
     location: "",
-    icon: null, // Puede ser URL inicial o File
+    icon: null,
   });
   const [preview, setPreview] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -34,10 +28,11 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
       setForm({
         name: company.name || "",
         location: company.location || "",
-        icon: null, // el archivo no se carga aquí
+        icon: null,
       });
-      setPreview(company.icon || null); // mostramos el icono actual si existe
+      setPreview(company.icon || null);
       setHasChanges(false);
+      setError(null);
     }
   }, [company]);
 
@@ -53,9 +48,22 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] || null;
     if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        setError('Solo se permiten archivos de imagen');
+        return;
+      }
+      
+      // Validar tamaño de archivo (5MB máximo)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('La imagen no debe superar los 5MB');
+        return;
+      }
+      
       setForm((prev) => ({ ...prev, icon: file }));
       setPreview(URL.createObjectURL(file));
       setHasChanges(true);
+      setError(null);
     }
   };
 
@@ -72,20 +80,27 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
 
     try {
       setSaving(true);
+      setError(null);
 
       // Usamos FormData para enviar archivos + datos
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("location", form.location);
+      
+      // Si hay una imagen nueva, agregarla
       if (form.icon) {
         formData.append("icon", form.icon);
       }
+      
+      // Si hay una imagen anterior, enviar su referencia para posible eliminación
+      if (company?.icon) {
+        formData.append("oldIcon", company.icon);
+      }
 
       await onUpdate(formData);
-
       setHasChanges(false);
-    } catch (error) {
-      console.error("Error updating company:", error);
+    } catch (err) {
+      setError(err.message || "Error al actualizar la empresa");
     } finally {
       setSaving(false);
     }
@@ -100,6 +115,7 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
       });
       setPreview(company.icon || null);
       setHasChanges(false);
+      setError(null);
     }
   };
 
@@ -108,6 +124,12 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
       <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>
         Configuración de la empresa
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
@@ -140,19 +162,25 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
               alt="Icono empresa"
               sx={{ width: 64, height: 64 }}
             />
-            <Button
-              variant="outlined"
-              component="label"
-              disabled={!canEdit}
-            >
-              Cambiar icono
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </Button>
+            <Stack>
+              <Button
+                variant="outlined"
+                component="label"
+                disabled={!canEdit}
+                sx={{ mb: 1 }}
+              >
+                Cambiar icono
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+              <Typography variant="caption" color="text.secondary">
+                Formatos: JPG, PNG, GIF. Máximo: 5MB
+              </Typography>
+            </Stack>
           </Stack>
         </Grid>
       </Grid>

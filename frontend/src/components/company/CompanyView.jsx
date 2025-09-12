@@ -23,7 +23,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCompanyPermissions } from '../../hooks/useCompanyPermissions';
 import { useUserStaffMembers } from '../../hooks/useUserStaffMembers';
 import { TABS_BY_ROLE, ROLES } from '../../constants/roles';
-import { getInitials } from '../../utils/helpers';
 
 import RoleChip from '../common/RoleChip';
 import CompanyStaffTab from '../tabs/CompanyStaffTab';
@@ -113,7 +112,11 @@ const CompanyView = () => {
   const renderHeader = () => (
     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
       <Stack direction="row" alignItems="center" spacing={2}>
-        <Avatar>{getInitials(company.name)}</Avatar>
+        <Avatar
+          alt='Icono empresa'
+          src={`http://localhost:3000${company.icon}`}
+          sx={{ width: 64, height: 64 }}
+        />
         <Box>
           <Typography variant="h5" fontWeight={800}>
             {company.name}

@@ -1,5 +1,8 @@
 import express from 'express';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import { appointmentsRouter } from './routes/appointments.js';
 import { companiesRouter } from './routes/companies.js';
 import { offeredServicesRouter } from './routes/offeredServices.js';
@@ -21,6 +24,10 @@ import cookieParser from 'cookie-parser';
 
 import cors from 'cors';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -35,6 +42,8 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Kairos App!' });
 });
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/appointments', appointmentsRouter);
 app.use('/companies', companiesRouter);
