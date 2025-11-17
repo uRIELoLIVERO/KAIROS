@@ -24,6 +24,7 @@ export const {
   availability_exception: AvailabilityExceptionModel,
   client: ClientModel,
   company: CompanyModel,
+  company_working_hours: CompanyWorkingHoursModel,
   global_role: GlobalRoleModel,
   offered_service: OfferedServiceModel,
   professional: ProfessionalModel,
@@ -33,7 +34,7 @@ export const {
   status: StatusModel,
   time_slot: TimeSlotModel,
   user: UserModel,
-  payment: PaymentModel
+  payment: PaymentModel,
 } = models;
 
 export { sequelize }

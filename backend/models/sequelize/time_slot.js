@@ -28,15 +28,6 @@ export default class time_slot extends Model {
         model: 'availability_day',
         key: 'id'
       }
-    },
-    availabilityExceptionId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'availability_exception_id',
-      references: {
-        model: 'availability_exception',
-        key: 'id'
-      }
     }
   }, {
     sequelize,

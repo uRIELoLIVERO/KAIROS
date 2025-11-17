@@ -1,19 +1,27 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import LandingLayout from './layouts/LandingLayout';
-import DashboardLayout from './layouts/DashboardLayout';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import LandingLayout from "./layouts/LandingLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 
-import Calendar from './components/CalendarView';
-// Importar desde tu nuevo index centralizado
-import { CompanySelectView, CompanyView } from './index.js';
+import Calendar from "./components/CalendarView";
 
-import Job from './components/JobView';
-import Help from './components/HelpView';
-import Settings from './components/SettingsView';
+import "@js-temporal/polyfill";
 
-import LoginModal from './components/LoginModal';
-import SignupModal from './components/SignupModal';
-import { useState } from 'react';
+import { CompanySelectView, CompanyView } from "./index.js";
+
+import Job from "./components/JobView";
+import Help from "./components/HelpView";
+import Settings from "./components/SettingsView";
+
+import LoginModal from "./components/LoginModal";
+import SignupModal from "./components/SignupModal";
+import { useState } from "react";
 
 function AppRoutes() {
   const location = useLocation();
@@ -29,12 +37,7 @@ function AppRoutes() {
     <>
       <Routes location={state?.backgroundLocation || location}>
         {/* Landing */}
-        <Route
-          path="/"
-          element={
-            <LandingLayout />
-          }
-        />
+        <Route path="/" element={<LandingLayout />} />
 
         {/* Dashboard protegido */}
         <Route
@@ -55,16 +58,40 @@ function AppRoutes() {
       {/* Modales superpuestos si hay backgroundLocation */}
       {state?.backgroundLocation && (
         <Routes>
-          <Route path="/login" element={<LoginModal open onClose={() => window.history.back()} onSuccess={handleLoginSuccess} />} />
-          <Route path="/signup" element={<SignupModal open onClose={() => window.history.back()} />} />
+          <Route
+            path="/login"
+            element={
+              <LoginModal
+                open
+                onClose={() => window.history.back()}
+                onSuccess={handleLoginSuccess}
+              />
+            }
+          />
+          <Route
+            path="/signup"
+            element={<SignupModal open onClose={() => window.history.back()} />}
+          />
         </Routes>
       )}
 
       {/* Si entran directo a /login o /signup */}
       {!state?.backgroundLocation && (
         <Routes>
-          <Route path="/login" element={<LoginModal open onClose={() => window.history.back()} onSuccess={handleLoginSuccess} />} />
-          <Route path="/signup" element={<SignupModal open onClose={() => window.history.back()} />} />
+          <Route
+            path="/login"
+            element={
+              <LoginModal
+                open
+                onClose={() => window.history.back()}
+                onSuccess={handleLoginSuccess}
+              />
+            }
+          />
+          <Route
+            path="/signup"
+            element={<SignupModal open onClose={() => window.history.back()} />}
+          />
         </Routes>
       )}
     </>

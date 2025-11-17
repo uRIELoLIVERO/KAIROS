@@ -9,6 +9,19 @@ export default class availability extends Model {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
+    },
+    staffMemberId: {
+      type: DataTypes.CHAR(36),
+      allowNull: false,
+      field: 'staff_member_id',
+      references: {
+        model: 'staff_member',
+        key: 'id'
+      }
+    },
+    name: {
+      type: DataTypes.STRING(100),
+      allowNull: false
     }
   }, {
     sequelize,

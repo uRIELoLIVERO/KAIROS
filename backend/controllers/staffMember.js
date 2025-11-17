@@ -11,8 +11,6 @@ export class StaffMemberController {
       companyId: data.company_id || data.companyId,
       professionalId: data.professional_id || data.professionalId,
       roleId: data.role_id || data.roleId,
-      availabilityId: data.availability_id || data.availabilityId,
-      availabilityExceptionId: data.availability_exception_id || data.availabilityExceptionId,
       deletedAt: data.deleted_at || data.deletedAt
     }
 

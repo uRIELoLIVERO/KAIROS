@@ -16,6 +16,7 @@ import _status from "./status.js";
 import _time_slot from "./time_slot.js";
 import _user from "./user.js";
 import _payment from "./payment.js";
+import _company_working_hours from "./company_working_hours.js";
 
 export default function initModels(sequelize) {
   // Inicialización de modelos
@@ -25,6 +26,7 @@ export default function initModels(sequelize) {
   const availability_exception = _availability_exception.init(sequelize, DataTypes);
   const client = _client.init(sequelize, DataTypes);
   const company = _company.init(sequelize, DataTypes);
+  const company_working_hours = _company_working_hours.init(sequelize, DataTypes);
   const global_role = _global_role.init(sequelize, DataTypes);
   const offered_service = _offered_service.init(sequelize, DataTypes);
   const professional = _professional.init(sequelize, DataTypes);
@@ -36,7 +38,6 @@ export default function initModels(sequelize) {
   const user = _user.init(sequelize, DataTypes);
   const payment = _payment.init(sequelize, DataTypes);
 
-  // Relaciones ORIGINALES (sin las añadidas por error)
   availability_day.belongsTo(availability, { foreignKey: "availabilityId"});
   availability.hasMany(availability_day, { foreignKey: "availabilityId"});
   
@@ -49,7 +50,6 @@ export default function initModels(sequelize) {
   time_slot.belongsTo(availability_exception, { foreignKey: "availabilityExceptionId"});
   availability_exception.hasMany(time_slot, { foreignKey: "availabilityExceptionId"});
   
-  // SOLO ESTA RELACIÓN CON availability_exception EXISTE EN TU ORIGINAL
   staff_member.belongsTo(availability_exception, { foreignKey: "availabilityExceptionId"});
   availability_exception.hasMany(staff_member, { foreignKey: "availabilityExceptionId"});
   
@@ -152,6 +152,9 @@ export default function initModels(sequelize) {
   payment.belongsTo(appointment, { foreignKey: "appointmentId" });
   appointment.hasMany(payment, { foreignKey: "appointmentId" });
 
+  company_working_hours.belongsTo(company, { foreignKey: "companyId" });
+  company.hasMany(company_working_hours, { foreignKey: "companyId" });
+
   return {
     appointment,
     availability,
@@ -159,6 +162,7 @@ export default function initModels(sequelize) {
     availability_exception,
     client,
     company,
+    company_working_hours,
     global_role,
     offered_service,
     professional,

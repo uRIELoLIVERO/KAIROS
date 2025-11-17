@@ -2,27 +2,180 @@ import { validateAvailability, validatePartialAvailability } from '../schemas/av
 import { AvailabilityModel, StaffMemberModel, AvailabilityDayModel, TimeSlotModel, sequelize, ProfessionalModel } from '../models/sequelize/sequelize.js'
 
 export class AvailabilityController {
+
+  static async createAvailability(req, res) {
+    try {
+      const validationResult = await validatePartialAvailability(req.body);
+
+      if (!validationResult.success) {
+        return res.status(400).json({ error: validationResult.error.message });
+      }
+
+      const { name, staffMemberId } = validationResult.data;
+
+      const staffMember = await StaffMemberModel.findByPk(staffMemberId);
+      if (!staffMember) {
+        return res.status(404).json({ error: 'Staff member not found' });
+      }
+
+      // --- LÓGICA DE DUPLICADOS (MODELO B) ---
+      if (staffMember.availabilityId) {
+        return res.status(409).json({ error: 'Availability already exists for this staff member' });
+      }
+
+      const t = await sequelize.transaction();
+
+      try {
+        // --- LÓGICA DE CREACIÓN (MODELO B) ---
+        // 1. Crea la disponibilidad
+        const newAvailability = await AvailabilityModel.create({
+          name: name, 
+          staffMemberId: staffMember.id
+        }, { transaction: t });
+
+        // 2. CREAR LOS 7 DÍAS DE LA SEMANA AUTOMÁTICAMENTE
+        const daysOfWeek = [
+          { dayOfWeek: 'MONDAY', isEnabled: false },
+          { dayOfWeek: 'TUESDAY', isEnabled: false },
+          { dayOfWeek: 'WEDNESDAY', isEnabled: false },
+          { dayOfWeek: 'THURSDAY', isEnabled: false },
+          { dayOfWeek: 'FRIDAY', isEnabled: false },
+          { dayOfWeek: 'SATURDAY', isEnabled: false },
+          { dayOfWeek: 'SUNDAY', isEnabled: false }
+        ];
+
+        // Crear todos los días de la semana
+        await Promise.all(
+          daysOfWeek.map(day => 
+            AvailabilityDayModel.create({
+              ...day,
+              availabilityId: newAvailability.id
+            }, { transaction: t })
+          )
+        );
+
+        // 3. Vincula la nueva disponibilidad al miembro del personal
+        await StaffMemberModel.update(
+          { availabilityId: newAvailability.id },
+          { where: { id: staffMemberId }, transaction: t }
+        );
+
+        await t.commit();
+
+        // 4. Devuelve la nueva disponibilidad CON LOS DÍAS INCLUIDOS
+        const availabilityWithDays = await AvailabilityModel.findByPk(newAvailability.id, {
+          include: [
+            {
+              association: 'availability_days',
+              include: ['time_slots']
+            }
+          ]
+        });
+
+        return res.status(201).json(availabilityWithDays);
+
+      } catch (error) {
+        await t.rollback();
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Error in createAvailability:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // NUEVO MÉTODO PARA INICIALIZAR DÍAS EN AVAILABILITIES EXISTENTES
+  static async initializeDays(req, res) {
+    try {
+      const { availabilityId } = req.params;
+
+      const availability = await AvailabilityModel.findByPk(availabilityId);
+      if (!availability) {
+        return res.status(404).json({ error: 'Availability not found' });
+      }
+
+      // Verificar si ya existen días para esta availability
+      const existingDays = await AvailabilityDayModel.findAll({
+        where: { availabilityId }
+      });
+
+      if (existingDays.length > 0) {
+        return res.status(409).json({ error: 'Days already exist for this availability' });
+      }
+
+      const t = await sequelize.transaction();
+
+      try {
+        // Crear los 7 días de la semana
+        const daysOfWeek = [
+          { dayOfWeek: 'MONDAY', isEnabled: false },
+          { dayOfWeek: 'TUESDAY', isEnabled: false },
+          { dayOfWeek: 'WEDNESDAY', isEnabled: false },
+          { dayOfWeek: 'THURSDAY', isEnabled: false },
+          { dayOfWeek: 'FRIDAY', isEnabled: false },
+          { dayOfWeek: 'SATURDAY', isEnabled: false },
+          { dayOfWeek: 'SUNDAY', isEnabled: false }
+        ];
+
+        await Promise.all(
+          daysOfWeek.map(day => 
+            AvailabilityDayModel.create({
+              ...day,
+              availabilityId: availabilityId
+            }, { transaction: t })
+          )
+        );
+
+        await t.commit();
+
+        // Devolver los días creados
+        const days = await AvailabilityDayModel.findAll({
+          where: { availabilityId }
+        });
+
+        return res.status(201).json(days);
+
+      } catch (error) {
+        await t.rollback();
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Error in initializeDays:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   static async getAvailability(req, res) {
     try {
       const { staffMemberId } = req.params;
+      
+      // 1. Busca al miembro del personal
+      const staffMember = await StaffMemberModel.findByPk(staffMemberId);
+      
+      if (!staffMember) {
+        return res.status(404).json({ error: 'Staff member not found' });
+      }
 
-      const staff = await StaffMemberModel.findByPk(staffMemberId, {
+      // 2. Comprueba si tiene un ID de disponibilidad (Modelo B)
+      if (!staffMember.availabilityId) {
+        return res.status(200).json(null);
+      }
+
+      // 3. Si tiene ID, busca la disponibilidad usando ese ID
+      const availability = await AvailabilityModel.findByPk(staffMember.availabilityId, {
         include: [
           {
-            association: 'availability',
-            include: [
-              {
-                association: 'availability_days',
-                include: ['time_slots'] // <-- Esto debe estar definido correctamente
-              }
-            ]
+            association: 'availability_days',
+            include: ['time_slots']
           }
         ]
       });
+      
+      // 4. Devuelve la disponibilidad
+      return res.status(200).json(availability);
 
-      if (!staff) return res.status(404).json({ error: 'Staff member not found' });
-
-      return res.status(200).json(staff.availability);
     } catch (error) {
       console.error('Error in getAvailability:', error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -109,7 +262,7 @@ export class AvailabilityController {
     }
   }
 
-static async getAvailabilityByLoggedUser(req, res) {
+  static async getAvailabilityByLoggedUser(req, res) {
     try {
         // 1. Obtener el profesional asociado al usuario
         const professional = await ProfessionalModel.findOne({

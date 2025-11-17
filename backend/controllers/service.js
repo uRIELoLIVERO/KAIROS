@@ -13,6 +13,7 @@ export class ServiceController {
             description: data.description,
             suggestedPrice: data.suggested_price || data.suggestedPrice,
             suggestedDuration: data.suggested_duration || data.suggestedDuration,
+            suggestedBuffer: data.suggested_buffer || data.suggestedBuffer,
             companyId: data.company_id || data.companiId,
             createdAt: data.created_at || data.createdAt,
             updatedAt: data.updated_at || data.updatedAt,

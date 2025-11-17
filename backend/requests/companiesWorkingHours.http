@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:3000/companies-working-hours
+@token = TU_TOKEN_DE_AUTENTICACION_SI_USAS
+@id = 1
+
+### GET (All)
+GET {{baseUrl}}
+Cookie: access_token={{token}}
+
+### GET (by Id)
+GET {{baseUrl}}/{{id}}
+Cookie: access_token={{token}}
+
+### POST (Create)
+POST {{baseUrl}}
+Content-Type: application/json
+Cookie: access_token={{token}}
+
+{
+  "dayOfWeek": 1,
+  "startTime": "09:00",
+  "endTime": "18:00",
+  "isClosed": false
+}
+
+### PUT (Update)
+PUT {{baseUrl}}/{{id}}
+Content-Type: application/json
+Cookie: access_token={{token}}
+
+{
+  "isClosed": true
+}
+
+### DELETE
+DELETE {{baseUrl}}/{{id}}
+Cookie: access_token={{token}}

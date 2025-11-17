@@ -35,24 +35,6 @@ export default class staff_member extends Model {
         model: 'role',
         key: 'id'
       }
-    },
-    availabilityId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'availability_id',
-      references: {
-        model: 'availability',
-        key: 'id'
-      }
-    },
-    availabilityExceptionId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: 'availability_exception_id',
-      references: {
-        model: 'availability_exception',
-        key: 'id'
-      }
     }
   }, {
     sequelize,

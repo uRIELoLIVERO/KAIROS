@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import {
   Box,
   Grid,
@@ -27,7 +33,15 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Collapse
+  Collapse,
+  Tabs,
+  Tab,
+  Switch,
+  List,
+  ListItem,
+  CircularProgress,
+  FormControlLabel,
+  FormGroup,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
@@ -35,16 +49,859 @@ import BusinessIcon from "@mui/icons-material/Business";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import AddIcon from "@mui/icons-material/Add";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import {
+  LocalizationProvider,
+  DatePicker,
+  TimePicker,
+} from "@mui/x-date-pickers";
+import { es } from "date-fns/locale";
+
+import { Temporal } from "@js-temporal/polyfill";
 
 // Hooks
 import { useAuth } from "../hooks/useAuth";
 import { useUserStaffMembers } from "../hooks/useUserStaffMembers";
+import { useAvailability } from "../hooks/useAvailability";
+import { useAvailabilityDays } from "../hooks/useAvailabilityDays";
+import { useTimeSlots } from "../hooks/useTimeSlots";
+import { useAvailabilityExceptions } from "../hooks/useAvailabilityException";
 
 // Servicios/API
 import OfferedServiceAPI from "../services/offeredServiceAPI";
+
 import { formatCurrency } from "../utils/helpers";
+
+// --- (INICIO) COMPONENTE AvailabilityDialog ---
+
+const DIAS_SEMANA = [
+  { key: "MONDAY", label: "Lunes" },
+  { key: "TUESDAY", label: "Martes" },
+  { key: "WEDNESDAY", label: "Miércoles" },
+  { key: "THURSDAY", label: "Jueves" },
+  { key: "FRIDAY", label: "Viernes" },
+  { key: "SATURDAY", label: "Sábado" },
+  { key: "SUNDAY", label: "Domingo" },
+];
+
+// --- Sub-componente para gestionar cada día (MODIFICADO) ---
+function DayAvailabilityCard({ dayData, onToggleDay }) {
+  const theme = useTheme();
+  const [newStartTime, setNewStartTime] = useState("");
+  const [newEndTime, setNewEndTime] = useState("");
+  const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  const {
+    timeSlots,
+    loading: loadingSlots,
+    createTimeSlot,
+    deleteTimeSlot,
+    error: slotError,
+    refetch: fetchTimeSlots,
+  } = useTimeSlots(dayData.id);
+
+  const handleAddSlot = async () => {
+    setError("");
+    if (!newStartTime || !newEndTime) {
+      setError("Debes especificar una hora de inicio y fin.");
+      return;
+    }
+    if (newStartTime >= newEndTime) {
+      setError("La hora de inicio debe ser anterior a la hora de fin.");
+      return;
+    }
+
+    const isOverlapping = timeSlots.some(
+      (slot) => newStartTime < slot.endTime && newEndTime > slot.startTime
+    );
+    if (isOverlapping) {
+      setError("El nuevo turno se solapa con uno existente.");
+      return;
+    }
+
+    try {
+      await createTimeSlot({ startTime: newStartTime, endTime: newEndTime });
+      setNewStartTime("");
+      setNewEndTime("");
+      await fetchTimeSlots();
+    } catch (err) {
+      setError(err.message || "Error al crear el turno");
+    }
+  };
+
+  const handleDeleteSlot = async (slotId) => {
+    try {
+      await deleteTimeSlot(slotId);
+
+      console.log("Eliminación exitosa en API, llamando a refetch...");
+      await fetchTimeSlots();
+      console.log("Refetch completado.");
+    } catch (err) {
+      setError(err.message || "Error al eliminar el turno");
+    }
+  };
+
+  const hasValidId = !!dayData.id;
+
+  return (
+    <Paper
+      elevation={2}
+      sx={{
+        mb: 2,
+        borderRadius: 2,
+        overflow: "hidden",
+        border: `1px solid ${
+          dayData.isEnabled ? theme.palette.primary.main : theme.palette.divider
+        }`,
+        opacity: hasValidId ? 1 : 0.7,
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          backgroundColor: dayData.isEnabled
+            ? "transparent"
+            : theme.palette.grey[100],
+        }}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <Stack spacing={0.5}>
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            color={dayData.isEnabled ? "text.primary" : "text.secondary"}
+          >
+            {dayData.label}
+            {!hasValidId && (
+              <Chip
+                label="No configurado"
+                size="small"
+                color="warning"
+                sx={{ ml: 1 }}
+              />
+            )}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {dayData.isEnabled
+              ? `${timeSlots.length} franja${timeSlots.length !== 1 ? "s" : ""}`
+              : "Cerrado"}
+          </Typography>
+        </Stack>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={dayData.isEnabled || false}
+                disabled={!dayData.id}
+                onChange={(e) => onToggleDay(dayData.id, e.target.checked)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            }
+            label={dayData.isEnabled ? "Abierto" : "Cerrado"}
+            onClick={(e) => e.stopPropagation()}
+            sx={{ mr: 1 }}
+          />
+          {hasValidId && (
+            <IconButton onClick={() => setExpanded(!expanded)}>
+              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+          )}
+        </Stack>
+      </Box>
+      {hasValidId && (
+        <Collapse in={expanded} timeout="auto" unmountOnExit>
+          <Divider />
+          <Box sx={{ p: 2, opacity: dayData.isEnabled ? 1 : 0.5 }}>
+            {!dayData.id ? (
+              <Alert severity="info">
+                Debes habilitar este día para poder agregar franjas horarias.
+              </Alert>
+            ) : loadingSlots ? (
+              <CircularProgress
+                size={24}
+                sx={{ mx: "auto", display: "block" }}
+              />
+            ) : (
+              <Stack spacing={2}>
+                {timeSlots.length > 0 ? (
+                  <List dense disablePadding>
+                    {timeSlots.map((slot) => (
+                      <ListItem
+                        key={slot.id}
+                        secondaryAction={
+                          <IconButton
+                            edge="end"
+                            aria-label="delete"
+                            onClick={() => handleDeleteSlot(slot.id)}
+                            disabled={!dayData.isEnabled}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        sx={{
+                          backgroundColor: theme.palette.grey[50],
+                          borderRadius: 1.5,
+                          mb: 1,
+                          pl: 1.5,
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          <AccessTimeIcon fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${slot.startTime} - ${slot.endTime}`}
+                          primaryTypographyProps={{
+                            fontWeight: 500,
+                            fontSize: "1rem",
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ py: 1 }}
+                  >
+                    No hay franjas horarias definidas para este día.
+                  </Typography>
+                )}
+                <Divider>Añadir franja horaria</Divider>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
+                  <TextField
+                    label="Hora de inicio"
+                    type="time"
+                    value={newStartTime}
+                    onChange={(e) => setNewStartTime(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ step: 300 }}
+                    sx={{ flex: 1, minWidth: "130px" }}
+                    fullWidth
+                    disabled={!dayData.isEnabled}
+                  />
+                  <TextField
+                    label="Hora de fin"
+                    type="time"
+                    value={newEndTime}
+                    onChange={(e) => setNewEndTime(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ step: 300 }}
+                    sx={{ flex: 1, minWidth: "130px" }}
+                    fullWidth
+                    disabled={!dayData.isEnabled}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={handleAddSlot}
+                    startIcon={<AddCircleOutlineIcon />}
+                    disabled={!dayData.isEnabled}
+                    sx={{
+                      flexShrink: 0,
+                      height: "56px",
+                      width: { xs: "100%", sm: "auto" },
+                    }}
+                  >
+                    Añadir
+                  </Button>
+                </Stack>
+                {(error || slotError) && (
+                  <Alert severity="error" sx={{ mt: 1 }}>
+                    {error || slotError}
+                  </Alert>
+                )}
+              </Stack>
+            )}
+          </Box>
+        </Collapse>
+      )}
+    </Paper>
+  );
+}
+
+// --- Pestaña de Excepciones (MODIFICADO) ---
+function ExceptionsTab({ staffMemberId }) {
+  const theme = useTheme();
+
+  const { exceptions, loading, createException, deleteException, error } =
+    useAvailabilityExceptions(staffMemberId);
+
+  const [formError, setFormError] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [reason, setReason] = useState("");
+  const [isAllDay, setIsAllDay] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [isAvailable, setIsAvailable] = useState(false);
+
+  const resetForm = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setReason("");
+    setIsAllDay(false);
+    setStartTime(null);
+    setEndTime(null);
+    setFormError(null);
+    setIsAvailable(false);
+  };
+
+  /**
+   * Combina un objeto Date (fecha) con un objeto Date (hora) de los pickers de MUI
+   * @param {Date | null} date - La fecha del DatePicker
+   * @param {Date | null} time - La hora del TimePicker
+   * @returns {Date | null} Un nuevo objeto Date combinando ambos
+   */
+  const combineDateTime = (date, time) => {
+    if (!date) return null;
+    const newDate = new Date(date);
+    if (time) {
+      newDate.setHours(time.getHours());
+      newDate.setMinutes(time.getMinutes());
+      newDate.setSeconds(time.getSeconds());
+    }
+    return newDate;
+  };
+
+  const handleAddException = async () => {
+    setFormError(null);
+
+    if (!startDate || !reason) {
+      setFormError("La fecha de inicio y la razón son obligatorias.");
+      return;
+    }
+    if (!isAllDay && (!startTime || !endTime)) {
+      setFormError(
+        "Debe especificar una hora de inicio y fin para excepciones parciales."
+      );
+      return;
+    }
+    if (!isAllDay && startTime >= endTime) {
+      setFormError("La hora de inicio debe ser anterior a la hora de fin.");
+      return;
+    }
+
+    let finalStartDate;
+    let finalEndDate;
+    const effectiveEndDate = endDate || startDate;
+
+    if (isAllDay) {
+      // Si es todo el día, usamos el inicio del día de inicio
+      finalStartDate = new Date(startDate);
+      finalStartDate.setHours(0, 0, 0, 0);
+
+      // Y el final del día de fin
+      finalEndDate = new Date(effectiveEndDate);
+      finalEndDate.setHours(23, 59, 59, 999);
+    } else {
+      // Si no es todo el día, combinamos las fechas y horas
+      finalStartDate = combineDateTime(startDate, startTime);
+      finalEndDate = combineDateTime(effectiveEndDate, endTime);
+    }
+
+    const payload = {
+      isAvailable: isAvailable,
+      reason: reason,
+      startDatetime: finalStartDate.toISOString(),
+      endDatetime: finalEndDate.toISOString(),
+    };
+
+    try {
+      await createException(payload);
+      resetForm();
+    } catch (error) {
+      console.error("Error creating exception:", error);
+      setFormError(
+        error?.response?.data?.error ||
+          error.message ||
+          "Error al guardar la excepción"
+      );
+    }
+  };
+
+  const handleDeleteException = async (id) => {
+    try {
+      await deleteException(id);
+    } catch (error) {
+      console.error("Error deleting exception:", error);
+    }
+  };
+
+  const formatTemporalRange = (startStr, endStr) => {
+    if (!startStr || !endStr) {
+      return "Fechas incompletas";
+    }
+
+    try {
+      /**
+       * Parsea el string UTC usando el método PlainDateTime + Zonificación.
+       * Es más robusto en el polyfill que Temporal.Instant.from()
+       */
+      const parseAndZone = (datetimeStr) => {
+        // 1. Quitamos la 'Z' para que PlainDateTime pueda leerlo
+        // (datetimeStr.slice(0, -1) es más limpio)
+        const plainStr = datetimeStr.slice(0, -1);
+
+        // 2. [USO DE TEMPORAL] Parseamos como fecha "simple"
+        const plainDateTime = Temporal.PlainDateTime.from(plainStr);
+
+        // 3. [USO DE TEMPORAL] Le decimos que esa fecha era UTC
+        const zonedDateTimeUTC = plainDateTime.toZonedDateTime("UTC");
+
+        // 4. [USO DE TEMPORAL] La convertimos a la zona horaria local
+        return zonedDateTimeUTC.withTimeZone(Temporal.Now.timeZoneId());
+      };
+
+      // 5. Parseamos ambos strings
+      const start = parseAndZone(startStr);
+      const end = parseAndZone(endStr);
+
+      // 6. Formateamos (lógica que ya estaba bien)
+      const timeFormat = { hour: "2-digit", minute: "2-digit" };
+      const dateFormat = { day: "2-digit", month: "2-digit", year: "numeric" };
+      const fullFormat = { ...dateFormat, ...timeFormat };
+      const locale = "es-AR";
+
+      if (start.toPlainDate().equals(end.toPlainDate())) {
+        return `${start
+          .toPlainDate()
+          .toLocaleString(locale, dateFormat)}, ${start
+          .toPlainTime()
+          .toLocaleString(locale, timeFormat)} - ${end
+          .toPlainTime()
+          .toLocaleString(locale, timeFormat)}`;
+      } else {
+        return `${start.toLocaleString(
+          locale,
+          fullFormat
+        )} - ${end.toLocaleString(locale, fullFormat)}`;
+      }
+    } catch (error) {
+      console.error(
+        "Error fatal en formatTemporalRange (v-Robusta):",
+        error.message
+      );
+      console.error("Inputs que fallaron:", { startStr, endStr });
+      return "Error de formato";
+    }
+  };
+
+  const getExceptionIcon = (isAvailable) => {
+    return isAvailable ? (
+      <EventBusyIcon color="success" />
+    ) : (
+      <EventBusyIcon color="error" />
+    );
+  };
+
+  const getExceptionText = (isAvailable) => {
+    return isAvailable ? "Disponible" : "No disponible";
+  };
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+      <Stack spacing={3}>
+        <Paper elevation={2} sx={{ p: 2, borderRadius: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            Añadir excepción
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <DatePicker
+                label="Fecha de Inicio"
+                value={startDate}
+                onChange={setStartDate}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <DatePicker
+                label="Fecha de Fin (opcional)"
+                value={endDate}
+                onChange={setEndDate}
+                minDate={startDate}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    fullWidth
+                    helperText="Dejar vacío si es un solo día"
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Razón (ej. Feriado, Vacaciones)"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isAvailable}
+                      onChange={(e) => setIsAvailable(e.target.checked)}
+                      color={isAvailable ? "success" : "default"}
+                    />
+                  }
+                  label={
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {getExceptionIcon(isAvailable)}
+                      <Typography
+                        color={isAvailable ? "success.main" : "error.main"}
+                        fontWeight="medium"
+                      >
+                        {getExceptionText(isAvailable)}
+                      </Typography>
+                    </Stack>
+                  }
+                />
+              </FormGroup>
+              <Typography variant="caption" color="text.secondary">
+                {isAvailable
+                  ? "Marca este período como tiempo disponible (ej. horario extra)"
+                  : "Marca este período como tiempo no disponible (ej. vacaciones, feriado)"}
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isAllDay}
+                      onChange={(e) => setIsAllDay(e.target.checked)}
+                    />
+                  }
+                  label="Todo el día"
+                />
+              </FormGroup>
+            </Grid>
+            {!isAllDay && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TimePicker
+                    label="Hora de inicio"
+                    value={startTime}
+                    onChange={setStartTime}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TimePicker
+                    label="Hora de fin"
+                    value={endTime}
+                    onChange={setEndTime}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </Grid>
+              </>
+            )}
+            {formError && (
+              <Grid item xs={12}>
+                <Alert severity="error">{formError}</Alert>
+              </Grid>
+            )}
+            <Grid item xs={12} display="flex" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleAddException}
+              >
+                Guardar excepción
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+        <Divider>Excepciones guardadas</Divider>
+        {error && <Alert severity="error">{error}</Alert>}
+        {loading ? (
+          <CircularProgress sx={{ mx: "auto" }} />
+        ) : (
+          <List>
+            {exceptions.map((ex) => (
+              <ListItem
+                key={ex.id}
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => handleDeleteException(ex.id)}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                }
+                sx={{
+                  backgroundColor: theme.palette.grey[50],
+                  borderRadius: 1.5,
+                  mb: 1,
+                  borderLeft: `6px solid ${
+                    ex.isAvailable
+                      ? theme.palette.success.main
+                      : theme.palette.error.main
+                  }`,
+                }}
+              >
+                <ListItemIcon>
+                  <EventBusyIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Chip
+                        label={ex.isAvailable ? "Disponible" : "No disponible"}
+                        size="small"
+                        color={ex.isAvailable ? "success" : "error"}
+                        variant={ex.isAvailable ? "outlined" : "filled"}
+                      />
+                      <Typography variant="body1" fontWeight="medium">
+                        {ex.reason}
+                      </Typography>
+                    </Box>
+                  }
+                  secondary={formatTemporalRange(
+                    ex.startDatetime,
+                    ex.endDatetime
+                  )}
+                />
+              </ListItem>
+            ))}
+            {exceptions.length === 0 && !loading && (
+              <Typography color="text.secondary" textAlign="center">
+                No hay excepciones guardadas.
+              </Typography>
+            )}
+          </List>
+        )}
+      </Stack>
+    </LocalizationProvider>
+  );
+}
+
+// --- Componente principal del Modal de Disponibilidad ---
+// --- Componente principal del Modal de Disponibilidad ---
+const AvailabilityDialog = React.memo(({ open, onClose, staffMemberId }) => {
+  const DIAS_SEMANA = [
+    { key: "MONDAY", label: "Lunes" },
+    { key: "TUESDAY", label: "Martes" },
+    { key: "WEDNESDAY", label: "Miércoles" },
+    { key: "THURSDAY", label: "Jueves" },
+    { key: "FRIDAY", label: "Viernes" },
+    { key: "SATURDAY", label: "Sábado" },
+    { key: "SUNDAY", label: "Domingo" },
+  ];
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const [tabIndex, setTabIndex] = useState(0);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const {
+    availability,
+    loading: loadingAvailability,
+    error: availabilityError,
+    createAvailability,
+    refetch: refetchAvailability,
+  } = useAvailability(staffMemberId);
+
+  const {
+    days,
+    loading: loadingDays,
+    error: daysError,
+    updateDay,
+  } = useAvailabilityDays(availability?.id);
+
+  const formattedDays = useMemo(() => {
+    return DIAS_SEMANA.map((dia) => {
+      const dbDay = days.find((d) => d.dayOfWeek === dia.key);
+      return {
+        id: dbDay?.id,
+        label: dia.label,
+        dayOfWeek: dia.key,
+        isEnabled: dbDay?.isEnabled || false,
+      };
+    });
+  }, [days]);
+
+  const handleTabChange = useCallback((event, newValue) => {
+    setTabIndex(newValue);
+  }, []);
+
+  const handleToggleDay = useCallback(
+    async (dayId, isEnabled) => {
+      if (!dayId) return;
+
+      try {
+        await updateDay(dayId, { isEnabled });
+      } catch (err) {
+        console.error("Error al actualizar el día:", err);
+      }
+    },
+    [updateDay]
+  );
+
+  const handleCreateAvailability = useCallback(async () => {
+    setIsCreating(true);
+    try {
+      await createAvailability({ staffMemberId, name: "Horario Principal" });
+      refetchAvailability?.();
+    } catch (err) {
+      console.error("Error al crear disponibilidad:", err);
+    } finally {
+      setIsCreating(false);
+    }
+  }, [createAvailability, staffMemberId, refetchAvailability]);
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      fullScreen={fullScreen}
+    >
+      <DialogTitle
+        sx={{
+          backgroundColor: theme.palette.primary.main,
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <DateRangeIcon />
+        Configurar Disponibilidad
+      </DialogTitle>
+
+      {availability && (
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={tabIndex}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            centered
+          >
+            <Tab label="Horario Semanal" icon={<ScheduleIcon />} />
+            <Tab label="Excepciones" icon={<EventBusyIcon />} />
+          </Tabs>
+        </Box>
+      )}
+
+      <DialogContent dividers>
+        {loadingAvailability ? (
+          <Box
+            sx={{
+              minHeight: 400,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : availabilityError && !availability ? (
+          <Box textAlign="center" sx={{ p: 4 }}>
+            <DateRangeIcon
+              sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
+            />
+            <Typography variant="h6" gutterBottom>
+              No tienes un horario configurado
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
+              Crea un horario base para comenzar a configurar tu disponibilidad.
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleCreateAvailability}
+              disabled={isCreating}
+            >
+              {isCreating ? (
+                <CircularProgress size={24} />
+              ) : (
+                "Crear Horario Principal"
+              )}
+            </Button>
+          </Box>
+        ) : availability ? (
+          <Box sx={{ pt: 2 }}>
+            <Box hidden={tabIndex !== 0}>
+              {loadingDays ? (
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  sx={{ p: 4 }}
+                >
+                  <CircularProgress />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 2 }}
+                  >
+                    Cargando horario...
+                  </Typography>
+                </Box>
+              ) : daysError ? (
+                <Alert severity="error">{daysError}</Alert>
+              ) : days.length === 0 ? (
+                <Alert severity="warning" sx={{ m: 2 }}>
+                  No se encontraron días configurados para este horario. Si el
+                  error persiste, contacte a soporte.
+                </Alert>
+              ) : (
+                <Stack spacing={2}>
+                  {formattedDays.map((day) => (
+                    <DayAvailabilityCard
+                      key={day.dayOfWeek}
+                      dayData={day}
+                      onToggleDay={handleToggleDay}
+                    />
+                  ))}
+                </Stack>
+              )}
+            </Box>
+            <Box hidden={tabIndex !== 1}>
+              <ExceptionsTab staffMemberId={staffMemberId} />
+            </Box>
+          </Box>
+        ) : null}
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cerrar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+});
+
+AvailabilityDialog.displayName = "AvailabilityDialog";
 
 // --- Modal de edición de OfferedService ---
 function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
@@ -61,16 +918,15 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
 
   useEffect(() => {
     if (open && offeredService) {
-      // Extraer valores de manera segura con valores por defecto
-      console.log(offeredService)
+      console.log(offeredService);
       const suggestedPrice = offeredService.service?.suggestedPrice || 0;
       const suggestedDuration = offeredService.service?.suggestedDuration || 0;
       const serviceDescription = offeredService.service?.description || "";
-      
       setForm({
         customPrice: offeredService.customPrice ?? suggestedPrice,
         customDuration: offeredService.customDuration ?? suggestedDuration,
-        customDescription: offeredService.customDescription ?? serviceDescription,
+        customDescription:
+          offeredService.customDescription ?? serviceDescription,
       });
       setErrors({});
       setTimeout(() => firstFieldRef.current?.focus(), 50);
@@ -103,10 +959,10 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
     onSubmit(payload);
   };
 
-  // Extraer valores para mostrar en los helper texts
   const suggestedPrice = offeredService?.service?.suggestedPrice ?? 0;
   const suggestedDuration = offeredService?.service?.suggestedDuration ?? "-";
-  const serviceDescription = offeredService?.service?.description || "Sin descripción";
+  const serviceDescription =
+    offeredService?.service?.description || "Sin descripción";
 
   return (
     <Dialog
@@ -134,7 +990,6 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
             fullWidth
             inputProps={{ min: 0, step: 0.01 }}
           />
-
           <TextField
             label="Duración personalizada (minutos)"
             name="customDuration"
@@ -149,7 +1004,6 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
             fullWidth
             inputProps={{ min: 1 }}
           />
-
           <TextField
             label="Descripción personalizada"
             name="customDescription"
@@ -183,12 +1037,10 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
 function OfferedServiceCard({ item, onEdit, onDelete }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  
-  // Extraer valores de manera segura con operador de encadenamiento opcional y valores por defecto
   const price = item.customPrice ?? item.service?.suggestedPrice ?? 0;
-  const duration = item.customDuration ?? item.service?.suggestedDuration ?? "-";
+  const duration =
+    item.customDuration ?? item.service?.suggestedDuration ?? "-";
   const description = item.customDescription || item.service?.description || "";
-  
   const [menuAnchor, setMenuAnchor] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -215,13 +1067,13 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
       sx={{
         borderRadius: 3,
         boxShadow: 2,
-        height: '100%',
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         transition: "all 0.2s ease-in-out",
-        "&:hover": { 
+        "&:hover": {
           boxShadow: theme.shadows[4],
-          transform: "translateY(-2px)" 
+          transform: "translateY(-2px)",
         },
         position: "relative",
       }}
@@ -236,8 +1088,13 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
           "&:last-child": { pb: { xs: 2, sm: 3 } },
         }}
       >
-        {/* Header con título y menú */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
           <Typography
             variant={isMobile ? "subtitle1" : "h6"}
             fontWeight={600}
@@ -255,7 +1112,6 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
           >
             {item.service?.name || "Servicio sin nombre"}
           </Typography>
-          
           <IconButton
             size="small"
             onClick={handleMenuOpen}
@@ -263,7 +1119,6 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
           >
             <MoreVertIcon />
           </IconButton>
-          
           <Menu
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
@@ -285,8 +1140,6 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
             </MenuItem>
           </Menu>
         </Box>
-
-        {/* Información del servicio */}
         <Stack direction="row" spacing={2} flexWrap="wrap" gap={1}>
           <Chip
             label={`${duration} min`}
@@ -300,8 +1153,6 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
             variant="outlined"
           />
         </Stack>
-
-        {/* Descripción */}
         {description && (
           <Typography
             variant="body2"
@@ -320,8 +1171,6 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
             {description}
           </Typography>
         )}
-
-        {/* Botón de acción */}
         <Button
           fullWidth
           variant="outlined"
@@ -337,7 +1186,8 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
 }
 
 // --- Sección de empresa ---
-function CompanySection({ company, onEdit, onDelete }) {
+function CompanySection({ company, onEdit, onDelete, staffMemberId }) {
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [expanded, setExpanded] = useState(true);
@@ -355,7 +1205,6 @@ function CompanySection({ company, onEdit, onDelete }) {
         mb: 3,
       }}
     >
-      {/* Header de la empresa - Ahora es clickeable */}
       <Box
         sx={{
           p: { xs: 2, sm: 3 },
@@ -365,39 +1214,71 @@ function CompanySection({ company, onEdit, onDelete }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
         }}
         onClick={toggleExpand}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          sx={{ flex: 1, minWidth: "250px" }}
+        >
           <BusinessIcon />
           <Box flex={1}>
-            <Typography 
-              variant={isMobile ? "h6" : "h5"} 
+            <Typography
+              variant={isMobile ? "h6" : "h5"}
               fontWeight={700}
               sx={{
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap"
+                whiteSpace: "nowrap",
               }}
             >
               {company.companyName}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              {company.items.length} servicio{company.items.length !== 1 ? "s" : ""}
+              {company.items.length} servicio
+              {company.items.length !== 1 ? "s" : ""}
             </Typography>
           </Box>
         </Stack>
-        
-        <IconButton 
-          onClick={toggleExpand} 
-          sx={{ color: "white" }}
-          size="large"
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          onClick={(e) => e.stopPropagation()}
         >
-          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </IconButton>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setAvailabilityOpen(true)}
+            startIcon={<DateRangeIcon />}
+            sx={{
+              backgroundColor: "white",
+              color: "primary.main",
+              "&:hover": { backgroundColor: "grey.100" },
+            }}
+          >
+            Configurar disponibilidad
+          </Button>
+          {availabilityOpen && (
+            <AvailabilityDialog
+              open={availabilityOpen}
+              onClose={() => setAvailabilityOpen(false)}
+              staffMemberId={staffMemberId}
+            />
+          )}
+          <IconButton
+            onClick={toggleExpand}
+            sx={{ color: "white" }}
+            size="large"
+          >
+            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        </Stack>
       </Box>
-
-      {/* Contenido - Grid de servicios con Collapse */}
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Box sx={{ p: { xs: 2, sm: 3 } }}>
           <Grid container spacing={{ xs: 2, md: 3 }}>
@@ -446,7 +1327,8 @@ export default function JobView() {
       setData(Array.isArray(res) ? res : res?.data ?? []);
     } catch (err) {
       setError(
-        err?.response?.data?.message || "Error al cargar tus servicios ofrecidos"
+        err?.response?.data?.message ||
+          "Error al cargar tus servicios ofrecidos"
       );
     } finally {
       setLoading(false);
@@ -459,15 +1341,16 @@ export default function JobView() {
 
   const handleRetry = () => fetchData();
 
-  // Normalización y agrupación mejorada
   const groupedServices = useMemo(() => {
     if (!data.length) return [];
 
-    // Normalizar datos
     const normalized = data.map((item) => {
       const service = item.service ?? item.Service ?? {};
       const companyId = service?.companyId ?? item.companyId ?? "unknown";
-      const companyName = service?.company?.name ?? item.service?.company?.name ?? "Empresa sin nombre";
+      const companyName =
+        service?.company?.name ??
+        item.service?.company?.name ??
+        "Empresa sin nombre";
 
       return {
         id: item.id,
@@ -483,21 +1366,17 @@ export default function JobView() {
       };
     });
 
-    // Filtrar por búsqueda
-    const filtered = query.trim() 
+    const filtered = query.trim()
       ? normalized.filter((item) => {
           const searchTerm = query.toLowerCase();
           const serviceName = (item.service?.name || "").toLowerCase();
           const companyName = (item.companyName || "").toLowerCase();
-          
           return (
-            serviceName.includes(searchTerm) ||
-            companyName.includes(searchTerm)
+            serviceName.includes(searchTerm) || companyName.includes(searchTerm)
           );
         })
       : normalized;
 
-    // Agrupar por empresa
     const grouped = new Map();
     filtered.forEach((item) => {
       const key = item.companyId;
@@ -511,13 +1390,12 @@ export default function JobView() {
       grouped.get(key).items.push(item);
     });
 
-    // Ordenar empresas por nombre y servicios por fecha
     return Array.from(grouped.values())
       .sort((a, b) => a.companyName.localeCompare(b.companyName))
       .map((group) => ({
         ...group,
-        items: group.items.sort((a, b) => 
-          new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        items: group.items.sort(
+          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
         ),
       }));
   }, [data, query]);
@@ -539,7 +1417,9 @@ export default function JobView() {
       handleCloseEdit();
       await fetchData();
     } catch (err) {
-      setError(err?.response?.data?.message || "Error al actualizar el servicio");
+      setError(
+        err?.response?.data?.message || "Error al actualizar el servicio"
+      );
     }
   };
 
@@ -588,12 +1468,13 @@ export default function JobView() {
   const isLoading = loading || loadingStaff;
 
   return (
-    <Box sx={{ 
-      p: { xs: 2, sm: 3, md: 4 },
-      maxWidth: "1400px",
-      mx: "auto"
-    }}>
-      {/* Header */}
+    <Box
+      sx={{
+        p: { xs: 2, sm: 3, md: 4 },
+        maxWidth: "1400px",
+        mx: "auto",
+      }}
+    >
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={3}
@@ -602,8 +1483,8 @@ export default function JobView() {
         sx={{ mb: 4 }}
       >
         <Box>
-          <Typography 
-            variant={isMobile ? "h5" : "h4"} 
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
             fontWeight={700}
             gutterBottom
           >
@@ -613,7 +1494,6 @@ export default function JobView() {
             Gestiona todos los servicios que ofreces en diferentes empresas
           </Typography>
         </Box>
-
         <TextField
           placeholder="Buscar por servicio, empresa o personal..."
           value={query}
@@ -635,14 +1515,12 @@ export default function JobView() {
               </InputAdornment>
             ),
           }}
-          sx={{ 
+          sx={{
             minWidth: { xs: "100%", md: 350 },
-            backgroundColor: "background.paper"
+            backgroundColor: "background.paper",
           }}
         />
       </Stack>
-
-      {/* Error */}
       {error && (
         <Alert
           severity="error"
@@ -656,8 +1534,6 @@ export default function JobView() {
           {error}
         </Alert>
       )}
-
-      {/* Contenido principal */}
       {isLoading ? (
         renderSkeletons()
       ) : groupedServices.length === 0 ? (
@@ -670,13 +1546,14 @@ export default function JobView() {
         >
           <BusinessIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
-            {query ? "No se encontraron servicios" : "No tienes servicios ofrecidos aún"}
+            {query
+              ? "No se encontraron servicios"
+              : "No tienes servicios ofrecidos aún"}
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            {query 
+            {query
               ? "Intenta con otros términos de búsqueda"
-              : "Cuando registres servicios en empresas, aparecerán aquí organizados por compañía"
-            }
+              : "Cuando registres servicios en empresas, aparecerán aquí organizados por compañía"}
           </Typography>
           {query && (
             <Button
@@ -696,12 +1573,11 @@ export default function JobView() {
               company={company}
               onEdit={handleOpenEdit}
               onDelete={handleDeleteService}
+              staffMemberId={company.items[0]?.staffMemberId}
             />
           ))}
         </Stack>
       )}
-
-      {/* Snackbar */}
       <Snackbar
         open={!!successMessage}
         autoHideDuration={4000}
@@ -717,16 +1593,12 @@ export default function JobView() {
           {successMessage}
         </Alert>
       </Snackbar>
-
-      {/* Modal editar */}
       <OfferedServiceEditDialog
         open={editOpen}
         onClose={handleCloseEdit}
         onSubmit={handleSubmitEdit}
         offeredService={editing}
       />
-
-      {/* Modal confirmación eliminación */}
       <Dialog
         open={deleteConfirmOpen}
         onClose={handleCancelDelete}

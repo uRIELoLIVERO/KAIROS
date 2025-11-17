@@ -41,6 +41,11 @@ export default class offered_service extends Model {
       type: DataTypes.INTEGER,
       allowNull: true,
       field: 'custom_duration'
+    },
+    customBuffer: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'custom_buffer'
     }
   }, {
     sequelize,

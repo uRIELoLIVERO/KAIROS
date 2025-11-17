@@ -27,6 +27,11 @@ export default class service extends Model {
       allowNull: true,
       field: 'suggested_duration'
     },
+    suggestedBuffer: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'suggested_buffer'
+    },
     companyId: {
       type: DataTypes.CHAR(36),
       allowNull: true,

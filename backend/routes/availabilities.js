@@ -6,5 +6,7 @@ export const availabilitiesRouter = Router();
 availabilitiesRouter.use(authenticate);
 
 availabilitiesRouter.get('/me', AvailabilityController.getAvailabilityByLoggedUser);
-availabilitiesRouter.get('/:staffMemberId', AvailabilityController.getAvailability);
+availabilitiesRouter.get('/staff/:staffMemberId', AvailabilityController.getAvailability);
 availabilitiesRouter.put('/:staffMemberId', AvailabilityController.updateAvailability);
+availabilitiesRouter.post('/', AvailabilityController.createAvailability);
+availabilitiesRouter.post('/:availabilityId/initialize-days', AvailabilityController.initializeDays);

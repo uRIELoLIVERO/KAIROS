@@ -1,7 +1,16 @@
 import z from 'zod';
-import { timeSlotSchema } from './timeSlot.js';
 
 export const availabilityDaySchema = z.object({
+    id: z.number().int().positive("ID must be a positive integer"),
     dayOfWeek: z.enum(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']),
-    timeSlots: timeSlotSchema.array().nonempty("At least one time slot is required"),
+    availabilityId: z.number().int().positive("Availability ID must be a positive integer"),
+    isEnabled: z.boolean(),
 })
+
+export function validateAvailabilityDay(object) {
+    return availabilityDaySchema.safeParse(object);
+}
+
+export function validatePartialAvailabilityDay(object) {
+    return availabilityDaySchema.partial().safeParse(object);
+}

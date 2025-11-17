@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { availabilityDaySchema } from './availabilityDay.js';
 
 export const availabilitySchema = z.object({
-  availability_days: z.array(availabilityDaySchema).nonempty('At least one day is required')
+  id: z.number().int().positive("ID must be a positive integer"),
+  staffMemberId: z.string().uuid("Invalid UUID format"),
+  name: z.string().min(3, "Name must be at least 3 characters long").optional(),
 });
 
 export function validateAvailability(object) {

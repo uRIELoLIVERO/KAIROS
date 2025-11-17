@@ -13,6 +13,9 @@ import { availabilitiesRouter } from './routes/availabilities.js';
 import { availabilityExceptionsRouter } from './routes/availabilityExceptions.js';
 import { authRouter } from './routes/auth.js';
 import { paymentsRouter } from './routes/payments.js';
+import { companyWorkingHoursRouter } from './routes/companiesWorkingHours.js';
+import { timeSlotsRouter } from './routes/timeSlots.js';
+import {avaylabilityDayRouter} from './routes/availabilityDays.js';
 import { userRouter } from './routes/users.js'
 
 import { sequelize } from './models/sequelize/sequelize.js';
@@ -56,6 +59,9 @@ app.use('/availability-exceptions', availabilityExceptionsRouter);
 app.use('/auth', authRouter);
 app.use('/payments', paymentsRouter);
 app.use('/users', userRouter)
+app.use('/companies-working-hours', companyWorkingHoursRouter);
+app.use('/time-slots', timeSlotsRouter);
+app.use('/availability-days', avaylabilityDayRouter);
 
 async function startServer() {
   try {

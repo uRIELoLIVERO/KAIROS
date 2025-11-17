@@ -14,10 +14,12 @@ export class OfferedServiceController {
             customDescription: data.custom_description || data.customDescription,
             customDuration: data.custom_duration || data.customDuration,
             customPrice: data.custom_price || data.customPrice,
+            customBuffer: data.custom_buffer || data.customBuffer,
             suggestedName: data.service?.name || data.suggestedName,
             suggestedDescription: data.service?.description || data.suggestedDescription,
             suggestedDuration: data.service?.duration || data.suggestedDuration,
             suggestedPrice: data.service?.price || data.suggestedPrice,
+            suggestedBuffer: data.service?.buffer || data.suggestedBuffer,
             createdAt: data.created_at || data.createdAt,
             updatedAt: data.updated_at || data.updatedAt,
             deletedAt: data.deleted_at || data.deletedAt

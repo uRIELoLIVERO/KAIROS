@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:3000/availability-days
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzYxMzI3MDExLCJleHAiOjE3NjE0MTM0MTF9.evBavzZyO9HK15Lq7v4YJCr4-U9zRbeHms0mfUdtOH8
+@id = 1
+
+### GET (All)
+GET {{baseUrl}}
+Cookie: access_token={{token}}
+
+### GET (by Id)
+GET {{baseUrl}}/{{id}}
+Cookie: access_token={{token}}
+
+### POST (Create)
+POST {{baseUrl}}
+Content-Type: application/json
+Cookie: access_token={{token}}
+
+{
+  "availabilityId": 8,
+  "dayOfWeek": "MONDAY"
+}
+
+### PUT (Update)
+PUT {{baseUrl}}/{{id}}
+Content-Type: application/json
+Cookie: access_token={{token}}
+
+{
+  "isEnabled": false
+}
+
+### DELETE
+DELETE {{baseUrl}}/{{id}}
+Cookie: access_token={{token}}

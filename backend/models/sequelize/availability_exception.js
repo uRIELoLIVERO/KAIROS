@@ -10,10 +10,6 @@ export default class availability_exception extends Model {
       allowNull: false,
       primaryKey: true
     },
-    day: {
-      type: DataTypes.DATEONLY,
-      allowNull: false
-    },
     isAvailable: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -22,6 +18,25 @@ export default class availability_exception extends Model {
     reason: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    staffMemberId: {
+      type: DataTypes.CHAR(36),
+      allowNull: false,
+      field: 'staff_member_id',
+      references: {
+        model: 'staff_member',
+        key: 'id'
+      }
+    },
+    startDatetime: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      field: 'start_datetime'
+    },
+    endDatetime: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      field: 'end_datetime'
     }
   }, {
     sequelize,

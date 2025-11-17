@@ -1,58 +1,30 @@
-### Obtener disponibilidad de un staff member
-GET http://localhost:3000/availabilities/ba937b4d-6748-11f0-b676-00ff1d8344ad
+@baseUrl = http://localhost:3000/availabilities
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzYxMzI3MDExLCJleHAiOjE3NjE0MTM0MTF9.evBavzZyO9HK15Lq7v4YJCr4-U9zRbeHms0mfUdtOH8
+@id = 1
 
-### Actualizar disponibilidad de un staff member
-PUT http://localhost:3000/availabilities/ba937b4d-6748-11f0-b676-00ff1d8344ad
+### Obtener disponibilidad de un staff member
+GET {{baseUrl}}/ba937b4d-6748-11f0-b676-00ff1d8344ad
+Cookie: access_token={{token}}
+### PUT (Update)
+PUT {{baseUrl}}/{{id}}
 Content-Type: application/json
+Cookie: access_token={{token}}
 
 {
-  "availability_days": [
-    {
-      "dayOfWeek": "MONDAY",
-      "timeSlots": [
-        {
-            "startTime": "09:00",
-            "endTime": "17:00"
-        }
-      ]
-    },
-    {
-      "dayOfWeek": "TUESDAY",
-      "timeSlots": [
-        {
-            "startTime": "09:00",
-            "endTime": "17:00"
-        }
-      ]
-    }
-  ]
+  "name": "Disponibilidad Fin de Semana"
 }
 
 ### Obtener disponibilidad del usuario logueado
-GET http://localhost:3000/availabilities/me
-Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU0MjYzMDgyLCJleHAiOjE3NTQzNDk0ODJ9.v9hZnJK53S6ZaYVW1-U0ODiIeu6H16ZVsRAPv_iIEHs
+GET {{baseUrl}}/me
+Cookie: access_token={{token}}
 
-POST http://localhost:3000/availabilities
+### Crear disponibilidad para el usuario logueado
+### POST (Create)
+POST {{baseUrl}}
 Content-Type: application/json
+Cookie: access_token={{token}}
+
 {
-  "availability_days": [
-    {
-      "dayOfWeek": "MONDAY",
-      "timeSlots": [
-        {
-            "startTime": "09:00",
-            "endTime": "17:00"
-        }
-      ]
-    },
-    {
-      "dayOfWeek": "TUESDAY",
-      "timeSlots": [
-        {
-            "startTime": "09:00",
-            "endTime": "17:00"
-        }
-      ]
-    }
-  ]
+  "name": "Disponibilidad Semanal General",
+  "staffMemberId": "fcd468eb-032d-4a14-9f82-5a6ee99ad4d7"
 }
