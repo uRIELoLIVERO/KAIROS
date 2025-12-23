@@ -1,0 +1,89 @@
+### Crear un nuevo turno
+POST http://localhost:3000/appointments
+Content-Type: application/json
+
+{
+  "appointmentDateTime": "2025-08-13T13:00:00Z",
+  "offeredServiceId": "fb496378-e4a7-49ef-bb86-27c5bbe17ce1",
+  "client": 
+  {
+    "firstName":"Valentin",
+    "lastName": "Olivero",
+    "phoneNumber": "54123456789",
+    "email": "creenquesoygolfista@gmail.com"
+  }
+}
+
+###
+
+### Obtener todos los turnos
+GET http://localhost:3000/appointments
+
+###
+
+### Obtener todos los turnos según estado
+GET http://localhost:3000/appointments?status=2
+
+###
+
+### Obtener un turno por ID
+GET http://localhost:3000/appointments/25513b9c-c111-4727-8a0a-94e430047153
+
+###
+
+### Obtener turnos del usuario logueado
+GET http://localhost:3000/appointments/me
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU0NTgxMjE1LCJleHAiOjE3NTQ2Njc2MTV9.WDy_fi0oyv4OQ3QEIVdigyasvF3lfwJ87upOYhbmnQo
+###
+
+### Obtener turnos por día
+GET http://localhost:3000/appointments/day?date=2025-07-09
+
+###
+
+### Obtener turnos por semana
+GET http://localhost:3000/appointments/week?date=2025-07-03
+
+###
+
+### Obtener turnos por mes
+GET http://localhost:3000/appointments/month?date=2025-08-01
+
+###
+
+### Obtener turnos por año
+GET http://localhost:3000/appointments/year?date=2025-01-01
+
+###
+
+### Obtener turnos por staffMember
+GET http://localhost:3000/appointments/staff-members/ba937b4d-6748-11f0-b676-00ff1d8344ad
+
+###
+
+### Actualizar un turno por ID (IGNORAR)
+PUT http://localhost:3000/appointments/80d976f3-a6f4-46b0-a3ff-0d295aff09f4
+Content-Type: application/json
+
+{
+  "appoinmentDateTime": "2025-07-11T16:00:00Z",
+  "client" : {
+    "name" : "Uriel"
+  }
+}
+
+###
+
+### Cambiar estado de un turno
+PATCH http://localhost:3000/appointments/b176432f-8179-4a5d-a4bc-3e42b35558f4/status
+Content-Type: application/json
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU0NDU4MTAyLCJleHAiOjE3NTQ1NDQ1MDJ9.j8RJ1-enQyubXwmxi4odSkWbuB8XcjuQ-73hD7u2QpE
+
+{
+  "name": "PAID"
+}
+
+###
+
+### Eliminar un turno
+DELETE http://localhost:3000/appointments/ba977631-6748-11f0-b676-00ff1d8344ad

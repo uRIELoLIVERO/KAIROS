@@ -1,0 +1,37 @@
+@baseUrl = http://localhost:3000/availability-exceptions
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzYyMTI1MjUxLCJleHAiOjE3NjIyMTE2NTF9.Z-pGtZp0QLHlyNHXuInqYwC-1vZLXjs36qH5AA75yfk
+@id = 1
+
+### GET (All)
+GET {{baseUrl}}
+Cookie: access_token={{token}}
+
+### GET (by Id)
+GET {{baseUrl}}/{{id}}
+Cookie: access_token={{token}}
+
+### POST (Create)
+POST {{baseUrl}}
+Content-Type: application/json
+Cookie: access_token={{token}}
+
+{
+  "endDatetime":	"2025-11-04T02:59:59.999Z",
+  "isAvailable":	false,
+  "reason":	"j",
+  "staffMemberId":	"fcd468eb-032d-4a14-9f82-5a6ee99ad4d7",
+  "startDatetime":	"2025-11-02T03:00:00.000Z"
+}
+
+### PUT (Update)
+PUT {{baseUrl}}/{{id}}
+Content-Type: application/json
+Cookie: access_token={{token}}
+
+{
+  "reason": "Motivo actualizado"
+}
+
+### DELETE
+DELETE {{baseUrl}}/{{id}}
+Cookie: access_token={{token}}

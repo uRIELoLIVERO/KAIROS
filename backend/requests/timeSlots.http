@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:3000/time-slots
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzYxMjMwNTI4LCJleHAiOjE3NjEzMTY5Mjh9.-fOeps4vkxAhLPXQ3DCHiCESPB8Ps1NKhEalOPom_8Y
+@id = 1
+
+### GET (by Id)
+GET {{baseUrl}}/{{id}}
+Authorization: Bearer {{token}}
+
+### POST (Create)
+POST {{baseUrl}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "availabilityDayId": 1,
+  "startTime": "10:00",
+  "endTime": "10:30"
+}
+
+### PUT (Update)
+PUT {{baseUrl}}/{{id}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "startTime": "10:15"
+}
+
+### DELETE
+DELETE {{baseUrl}}/{{id}}
+Authorization: Bearer {{token}}

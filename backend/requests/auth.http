@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:3000/auth
+
+### Registro de usuario
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "firstName": "Uriel",
+  "lastName" : "Olivero",
+  "email": "andoconunalocuradeesasquenosequitan@yahoo.com",
+  "phoneNumber" : "520252025202",
+  "password": "ahoraquierenseramigos1234"
+}
+
+### Inicio de sesión
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "andoconunalocuradeesasquenosequitan@yahoo.com",
+  "password": "nuevaContraseñaSegura456"
+}
+
+### Cerrar sesión
+POST {{baseUrl}}/logout
+Authorization: Bearer {eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzUzNDI2MTc2LCJleHAiOjE3NTM1MTI1NzZ9.d49E3yPM-Fm0Q5bvVOnmU1_oALjQLX5JSOmBM_CYWj0}
+
+### Refrescar token
+POST {{baseUrl}}/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzUzNDI2MTQ3LCJleHAiOjE3NTQwMzA5NDd9.4f5Q7-MSA79wrJebXj34H4bkM_YUaXDGPfOVwkqpvOg}"
+}
+
+### Olvidé contraseña
+POST {{baseUrl}}/forgot-password
+Content-Type: application/json
+
+{
+  "email": "andoconunalocuradeesasquenosequitan@yahoo.com"
+}
+
+### Resetear contraseña
+POST {{baseUrl}}/reset-password
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImlhdCI6MTc1MzQyNjIxNywiZXhwIjoxNzUzNDI3MTE3fQ.kiXQ-BSFQzFoMmEno38QvG7U1EJKkDVLbp52IsV6uJ0",
+  "newPassword": "nuevaContraseñaSegura456"
+}
+
+### Devuelve datos del usuario logueado
+GET {{baseUrl}}/me
+Content-Type: application/json

@@ -1,0 +1,46 @@
+/* index.css: reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  font-family: 'Noto Sans JP', sans-serif;
+  background-color: #fff;
+  color: #000;
+}
+
+.MuiBox-root {
+  font-size: 0.70rem;
+}
+.rbc-label {
+  width: 37.9833px;
+  color: #71717A;
+}
+.rbc-header {
+  border: 0px
+}
+.rbc-time-view .rbc-row {
+  min-height: auto;
+}
+.rbc-timeslot-group {
+  height: 72px;
+}
+.rbc-toolbar button {
+  border: 0px;
+  color: #71717A;
+}
+.rbc-toolbar button:active, .rbc-toolbar button.rbc-active, button.rbc-active:hover, .rbc-toolbar button.rbc-active:focus{
+  color: white;
+  background-color: #002C15;
+}
+.rbc-time-view, .rbc-time-content > * + * > *, .rbc-time-content, .rbc-time-header-content, .rbc-header + .rbc-header {
+  border: 1px solid #EFF6FF
+}
+.rbc-time-content > * + * > * {
+  border-left: 1px solid #EFF6FF
+}

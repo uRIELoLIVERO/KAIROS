@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:3000
+
+### 🔹 Crear un nuevo servicio
+POST {{baseUrl}}/services
+Content-Type: application/json
+
+{
+  "name": "test frontend service",
+  "description": "esta es una descripcion de prueba para el servicio creado desde el frontend",
+  "suggestedPrice": 123000,
+  "suggestedDuration": 90,
+  "companyId": "0aed5769-7eae-40c7-9e8f-c10c3b6e8ee5"
+}
+###
+
+### 🔹 Obtener todos los servicios
+GET {{baseUrl}}/services
+
+###
+
+### 🔹 Obtener servicio por ID
+GET {{baseUrl}}/services/ba89b6b4-6748-11f0-b676-00ff1d8344ad
+
+###
+
+### 🔹 Actualizar servicio
+PUT {{baseUrl}}/services/ba89b6b4-6748-11f0-b676-00ff1d8344ad
+Content-Type: application/json
+
+{
+  "name": "Masaje descontracturante",
+  "description": "Masaje suave con enfoque en áreas tensas",
+  "suggestedPrice": 4000,
+  "suggestedDuration": 45
+}
+
+###
+
+### 🔹 Eliminar servicio
+DELETE {{baseUrl}}/services/72228ec0-3762-4249-8893-fa54bcddd9b6

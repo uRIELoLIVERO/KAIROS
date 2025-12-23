@@ -1,0 +1,3 @@
+### Obtener usuario segun email
+GET http://localhost:3000/users/andoconunalocuradeesasquenosequitan@yahoo.com
+Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE1MzE2M2U1LWM1NzgtNDU3YS1hZTNkLTJjMWYxZGNhODY3ZSIsImdsb2JhbFJvbGVJZCI6MiwiaWF0IjoxNzU1NjE1MDkzLCJleHAiOjE3NTU3MDE0OTN9.aDhXv6LdAkG6AbbQg9yk-es9tH3PUn89zkx8B-4JFEw

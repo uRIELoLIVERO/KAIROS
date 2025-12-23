@@ -1,0 +1,46 @@
+import { Router } from 'express';
+import { AppointmentController } from '../controllers/appointment.js';
+import { authenticate } from '../middlewares/authenticate.js';
+
+export const appointmentsRouter = Router()
+
+// Create a new appointment
+appointmentsRouter.post('/', AppointmentController.createAppointment);
+
+appointmentsRouter.use(authenticate)
+
+// Get all appointments
+appointmentsRouter.get('/', AppointmentController.getAllAppointments);
+
+// Get appointments by email and company (query params: email, companyId, status)
+appointmentsRouter.get('/search', AppointmentController.getAppointmentsByEmailAndCompany);
+
+// Get appointments by day
+appointmentsRouter.get('/day', AppointmentController.getAppointmentsByDay);
+
+// Get appointments by loged user
+appointmentsRouter.get('/me', AppointmentController.getAppointmentsByLoggedUser);
+
+// Get appointments by week
+appointmentsRouter.get('/week', AppointmentController.getAppointmentsByWeek);
+
+// Get appointments by month
+appointmentsRouter.get('/month', AppointmentController.getAppointmentsByMonth);
+
+// Get appointments by year
+appointmentsRouter.get('/year', AppointmentController.getAppointmentsByYear);
+
+// Get specific appointment by ID
+appointmentsRouter.get('/:id', AppointmentController.getAppointmentById);
+
+// Get all appointment by staff member
+appointmentsRouter.get('/staff-members/:staffMemberId', AppointmentController.getAppointmentsByStaffMember)
+
+// update an existing appointment by ID
+appointmentsRouter.put('/:id', AppointmentController.updateAppointment)
+
+// change appointment status
+appointmentsRouter.patch('/:id/status', AppointmentController.changeAppointmentStatus);
+
+// Delete an appointment by ID
+appointmentsRouter.delete('/:id', AppointmentController.deleteAppointment);

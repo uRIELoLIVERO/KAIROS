@@ -1,0 +1,36 @@
+import axios from 'axios'
+
+class ProfessionalAPI {
+    static async getProfessionalById(professionalId) {
+        const { data } = await axios.get(
+            `http://localhost:3000/professionals/${professionalId}`, 
+            { withCredentials: true }
+        );
+        return data
+    }
+
+    static async getProfessionalByUserId (userId) {
+        const { data } = await axios.get(
+            `http://localhost:3000/professionals/user/${userId}`, 
+            { withCredentials: true }
+        );
+        return data
+    }
+
+    static async updateProfessional(professionalId, professionalData) {
+        const { data } = await axios.patch(
+            `http://localhost:3000/professionals/${professionalId}/profile`, 
+            professionalData,
+            {
+                headers: {
+                'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true
+            }
+        );
+        return data;
+    }
+
+}
+
+export default ProfessionalAPI
