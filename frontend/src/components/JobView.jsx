@@ -74,13 +74,11 @@ import { useAvailability } from "../hooks/useAvailability";
 import { useAvailabilityDays } from "../hooks/useAvailabilityDays";
 import { useTimeSlots } from "../hooks/useTimeSlots";
 import { useAvailabilityExceptions } from "../hooks/useAvailabilityException";
-
-// Servicios/API
-import OfferedServiceAPI from "../services/offeredServiceAPI";
+import { useOfferedServices } from "../hooks/useOfferedServices";
 
 import { formatCurrency } from "../utils/helpers";
 
-// --- (INICIO) COMPONENTE AvailabilityDialog ---
+// --- (INICIO) COMPONENTES AUXILIARES ---
 
 const DIAS_SEMANA = [
   { key: "MONDAY", label: "Lunes" },
@@ -92,7 +90,7 @@ const DIAS_SEMANA = [
   { key: "SUNDAY", label: "Domingo" },
 ];
 
-// --- Sub-componente para gestionar cada día (MODIFICADO) ---
+// --- Sub-componente para gestionar cada día ---
 function DayAvailabilityCard({ dayData, onToggleDay }) {
   const theme = useTheme();
   const [newStartTime, setNewStartTime] = useState("");
@@ -141,10 +139,7 @@ function DayAvailabilityCard({ dayData, onToggleDay }) {
   const handleDeleteSlot = async (slotId) => {
     try {
       await deleteTimeSlot(slotId);
-
-      console.log("Eliminación exitosa en API, llamando a refetch...");
       await fetchTimeSlots();
-      console.log("Refetch completado.");
     } catch (err) {
       setError(err.message || "Error al eliminar el turno");
     }
@@ -337,7 +332,7 @@ function DayAvailabilityCard({ dayData, onToggleDay }) {
   );
 }
 
-// --- Pestaña de Excepciones (MODIFICADO) ---
+// --- Pestaña de Excepciones ---
 function ExceptionsTab({ staffMemberId }) {
   const theme = useTheme();
 
@@ -364,12 +359,6 @@ function ExceptionsTab({ staffMemberId }) {
     setIsAvailable(false);
   };
 
-  /**
-   * Combina un objeto Date (fecha) con un objeto Date (hora) de los pickers de MUI
-   * @param {Date | null} date - La fecha del DatePicker
-   * @param {Date | null} time - La hora del TimePicker
-   * @returns {Date | null} Un nuevo objeto Date combinando ambos
-   */
   const combineDateTime = (date, time) => {
     if (!date) return null;
     const newDate = new Date(date);
@@ -404,15 +393,12 @@ function ExceptionsTab({ staffMemberId }) {
     const effectiveEndDate = endDate || startDate;
 
     if (isAllDay) {
-      // Si es todo el día, usamos el inicio del día de inicio
       finalStartDate = new Date(startDate);
       finalStartDate.setHours(0, 0, 0, 0);
 
-      // Y el final del día de fin
       finalEndDate = new Date(effectiveEndDate);
       finalEndDate.setHours(23, 59, 59, 999);
     } else {
-      // Si no es todo el día, combinamos las fechas y horas
       finalStartDate = combineDateTime(startDate, startTime);
       finalEndDate = combineDateTime(effectiveEndDate, endTime);
     }
@@ -451,30 +437,16 @@ function ExceptionsTab({ staffMemberId }) {
     }
 
     try {
-      /**
-       * Parsea el string UTC usando el método PlainDateTime + Zonificación.
-       * Es más robusto en el polyfill que Temporal.Instant.from()
-       */
       const parseAndZone = (datetimeStr) => {
-        // 1. Quitamos la 'Z' para que PlainDateTime pueda leerlo
-        // (datetimeStr.slice(0, -1) es más limpio)
         const plainStr = datetimeStr.slice(0, -1);
-
-        // 2. [USO DE TEMPORAL] Parseamos como fecha "simple"
         const plainDateTime = Temporal.PlainDateTime.from(plainStr);
-
-        // 3. [USO DE TEMPORAL] Le decimos que esa fecha era UTC
         const zonedDateTimeUTC = plainDateTime.toZonedDateTime("UTC");
-
-        // 4. [USO DE TEMPORAL] La convertimos a la zona horaria local
         return zonedDateTimeUTC.withTimeZone(Temporal.Now.timeZoneId());
       };
 
-      // 5. Parseamos ambos strings
       const start = parseAndZone(startStr);
       const end = parseAndZone(endStr);
 
-      // 6. Formateamos (lógica que ya estaba bien)
       const timeFormat = { hour: "2-digit", minute: "2-digit" };
       const dateFormat = { day: "2-digit", month: "2-digit", year: "numeric" };
       const fullFormat = { ...dateFormat, ...timeFormat };
@@ -495,11 +467,7 @@ function ExceptionsTab({ staffMemberId }) {
         )} - ${end.toLocaleString(locale, fullFormat)}`;
       }
     } catch (error) {
-      console.error(
-        "Error fatal en formatTemporalRange (v-Robusta):",
-        error.message
-      );
-      console.error("Inputs que fallaron:", { startStr, endStr });
+      console.error("Error fatal en formatTemporalRange:", error.message);
       return "Error de formato";
     }
   };
@@ -524,7 +492,7 @@ function ExceptionsTab({ staffMemberId }) {
             Añadir excepción
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <DatePicker
                 label="Fecha de Inicio"
                 value={startDate}
@@ -532,7 +500,7 @@ function ExceptionsTab({ staffMemberId }) {
                 renderInput={(params) => <TextField {...params} fullWidth />}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <DatePicker
                 label="Fecha de Fin (opcional)"
                 value={endDate}
@@ -547,7 +515,7 @@ function ExceptionsTab({ staffMemberId }) {
                 )}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Razón (ej. Feriado, Vacaciones)"
                 value={reason}
@@ -555,7 +523,7 @@ function ExceptionsTab({ staffMemberId }) {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormGroup>
                 <FormControlLabel
                   control={
@@ -584,7 +552,7 @@ function ExceptionsTab({ staffMemberId }) {
                   : "Marca este período como tiempo no disponible (ej. vacaciones, feriado)"}
               </Typography>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormGroup>
                 <FormControlLabel
                   control={
@@ -599,7 +567,7 @@ function ExceptionsTab({ staffMemberId }) {
             </Grid>
             {!isAllDay && (
               <>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TimePicker
                     label="Hora de inicio"
                     value={startTime}
@@ -609,7 +577,7 @@ function ExceptionsTab({ staffMemberId }) {
                     )}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TimePicker
                     label="Hora de fin"
                     value={endTime}
@@ -622,11 +590,11 @@ function ExceptionsTab({ staffMemberId }) {
               </>
             )}
             {formError && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Alert severity="error">{formError}</Alert>
               </Grid>
             )}
-            <Grid item xs={12} display="flex" justifyContent="flex-end">
+            <Grid size={{ xs: 12 }} display="flex" justifyContent="flex-end">
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
@@ -703,18 +671,7 @@ function ExceptionsTab({ staffMemberId }) {
 }
 
 // --- Componente principal del Modal de Disponibilidad ---
-// --- Componente principal del Modal de Disponibilidad ---
 const AvailabilityDialog = React.memo(({ open, onClose, staffMemberId }) => {
-  const DIAS_SEMANA = [
-    { key: "MONDAY", label: "Lunes" },
-    { key: "TUESDAY", label: "Martes" },
-    { key: "WEDNESDAY", label: "Miércoles" },
-    { key: "THURSDAY", label: "Jueves" },
-    { key: "FRIDAY", label: "Viernes" },
-    { key: "SATURDAY", label: "Sábado" },
-    { key: "SUNDAY", label: "Domingo" },
-  ];
-
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [tabIndex, setTabIndex] = useState(0);
@@ -918,7 +875,6 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
 
   useEffect(() => {
     if (open && offeredService) {
-      console.log(offeredService);
       const suggestedPrice = offeredService.service?.suggestedPrice || 0;
       const suggestedDuration = offeredService.service?.suggestedDuration || 0;
       const serviceDescription = offeredService.service?.description || "";
@@ -1110,7 +1066,7 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
               minHeight: "3.2em",
             }}
           >
-            {item.service?.name || "Servicio sin nombre"}
+            {item.serviceName || item.service?.name || "Servicio sin nombre"}
           </Typography>
           <IconButton
             size="small"
@@ -1236,7 +1192,7 @@ function CompanySection({ company, onEdit, onDelete, staffMemberId }) {
                 whiteSpace: "nowrap",
               }}
             >
-              {company.companyName}
+              {company.companyName || "Empresa sin nombre"}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
               {company.items.length} servicio
@@ -1284,7 +1240,7 @@ function CompanySection({ company, onEdit, onDelete, staffMemberId }) {
           <Grid container spacing={{ xs: 2, md: 3 }}>
             {company.items.map((item) => {
               return (
-                <Grid key={item.id} item xs={12} sm={6} lg={4}>
+                <Grid key={item.id} size={{ xs: 12, sm: 6 }} lg={4}>
                   <OfferedServiceCard
                     item={item}
                     onEdit={onEdit}
@@ -1300,65 +1256,49 @@ function CompanySection({ company, onEdit, onDelete, staffMemberId }) {
   );
 }
 
-// --- Vista principal ---
+// --- Vista principal (REFACTORIZADA) ---
 export default function JobView() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { user } = useAuth();
-  const { staffMembers, loading: loadingStaff } = useUserStaffMembers(user?.id);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { loadingStaff: loading } = useUserStaffMembers(user?.id);
+  const {
+    services: data,
+    error,
+    refetch,
+    updateService,
+    deleteService,
+  } = useOfferedServices();
+
   const [successMessage, setSuccessMessage] = useState(null);
   const [query, setQuery] = useState("");
-  const [data, setData] = useState([]);
 
   const [editing, setEditing] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await OfferedServiceAPI.getMyOfferedServices();
-      setData(Array.isArray(res) ? res : res?.data ?? []);
-    } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          "Error al cargar tus servicios ofrecidos"
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleRetry = () => {
+    setActionError(null);
+    refetch();
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleRetry = () => fetchData();
-
   const groupedServices = useMemo(() => {
-    if (!data.length) return [];
+    if (!data || !Array.isArray(data) || data.length === 0) return [];
 
     const normalized = data.map((item) => {
-      const service = item.service ?? item.Service ?? {};
-      const companyId = service?.companyId ?? item.companyId ?? "unknown";
-      const companyName =
-        service?.company?.name ??
-        item.service?.company?.name ??
-        "Empresa sin nombre";
-
+      // Usar los campos que vienen del transform
       return {
         id: item.id,
-        staffMemberId: item.staffMemberId ?? null,
-        companyId,
-        companyName,
-        service,
-        serviceId: item.serviceId ?? service?.id ?? null,
+        staffMemberId: item.staffMemberId,
+        companyId: item.companyId,
+        companyName: item.companyName || "Empresa sin nombre",
+        service: item.service || {},
+        serviceName: item.serviceName,
+        serviceId: item.serviceId,
         customPrice: item.customPrice,
         customDuration: item.customDuration,
         customDescription: item.customDescription,
@@ -1369,7 +1309,11 @@ export default function JobView() {
     const filtered = query.trim()
       ? normalized.filter((item) => {
           const searchTerm = query.toLowerCase();
-          const serviceName = (item.service?.name || "").toLowerCase();
+          const serviceName = (
+            item.serviceName ||
+            item.service?.name ||
+            ""
+          ).toLowerCase();
           const companyName = (item.companyName || "").toLowerCase();
           return (
             serviceName.includes(searchTerm) || companyName.includes(searchTerm)
@@ -1383,7 +1327,7 @@ export default function JobView() {
       if (!grouped.has(key)) {
         grouped.set(key, {
           companyId: key,
-          companyName: item.companyName,
+          companyName: item.companyName || "Empresa sin nombre",
           items: [],
         });
       }
@@ -1411,33 +1355,34 @@ export default function JobView() {
   };
 
   const handleSubmitEdit = async (payload) => {
-    try {
-      await OfferedServiceAPI.updateOfferedService(editing.id, payload);
+    setActionError(null);
+    // Usamos la función updateService del hook
+    const result = await updateService(editing.id, payload);
+
+    if (result.success) {
       setSuccessMessage("Servicio actualizado correctamente");
       handleCloseEdit();
-      await fetchData();
-    } catch (err) {
-      setError(
-        err?.response?.data?.message || "Error al actualizar el servicio"
-      );
+    } else {
+      setActionError(result.error);
     }
   };
 
   const handleDeleteService = (item) => {
-    console.log("Eliminar servicio", item);
     setServiceToDelete(item);
     setDeleteConfirmOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    try {
-      await OfferedServiceAPI.deleteOfferedService(serviceToDelete.id);
+    setActionError(null);
+    // Usamos la función deleteService del hook
+    const result = await deleteService(serviceToDelete.id);
+
+    if (result.success) {
       setSuccessMessage("Servicio eliminado correctamente");
       setDeleteConfirmOpen(false);
       setServiceToDelete(null);
-      await fetchData();
-    } catch (err) {
-      setError(err?.response?.data?.message || "Error al eliminar el servicio");
+    } else {
+      setActionError(result.error);
     }
   };
 
@@ -1454,7 +1399,7 @@ export default function JobView() {
           <Box sx={{ p: 3 }}>
             <Grid container spacing={3}>
               {Array.from({ length: 3 }).map((_, j) => (
-                <Grid key={j} item xs={12} sm={6} lg={4}>
+                <Grid key={j} size={{ xs: 12, sm: 6 }} lg={4}>
                   <Skeleton variant="rounded" height={200} />
                 </Grid>
               ))}
@@ -1465,7 +1410,10 @@ export default function JobView() {
     </Stack>
   );
 
-  const isLoading = loading || loadingStaff;
+  // Mostrar loading solo si estamos obteniendo los servicios.
+  // Si falla la carga de staff, pero los servicios están, mostramos los servicios.
+  const isLoading = loading;
+  const displayError = error || actionError;
 
   return (
     <Box
@@ -1521,19 +1469,25 @@ export default function JobView() {
           }}
         />
       </Stack>
-      {error && (
+
+      {displayError && (
         <Alert
           severity="error"
           sx={{ mb: 3, borderRadius: 2 }}
           action={
-            <Button color="inherit" size="small" onClick={handleRetry}>
-              Reintentar
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setActionError(null)}
+            >
+              Cerrar
             </Button>
           }
         >
-          {error}
+          {displayError}
         </Alert>
       )}
+
       {isLoading ? (
         renderSkeletons()
       ) : groupedServices.length === 0 ? (
@@ -1578,6 +1532,7 @@ export default function JobView() {
           ))}
         </Stack>
       )}
+
       <Snackbar
         open={!!successMessage}
         autoHideDuration={4000}
@@ -1593,12 +1548,14 @@ export default function JobView() {
           {successMessage}
         </Alert>
       </Snackbar>
+
       <OfferedServiceEditDialog
         open={editOpen}
         onClose={handleCloseEdit}
         onSubmit={handleSubmitEdit}
         offeredService={editing}
       />
+
       <Dialog
         open={deleteConfirmOpen}
         onClose={handleCancelDelete}

@@ -23,6 +23,15 @@ import LoginModal from "./components/LoginModal";
 import SignupModal from "./components/SignupModal";
 import { useState } from "react";
 
+import CompaniesList from "./components/CompaniesList";
+import CompanyDetail from "./components/CompanyDetail";
+
+import ReservationPage from "./components/ReservationPage";
+import ClientDataPage from "./components/ClientDataPage";
+import ConfirmReservationPage from "./components/ConfirmReservationPage";
+import ReservationSuccessPage from "./components/ReservationSuccessPage";
+import ReservationWizard from "./components/ReservationWizard";
+
 function AppRoutes() {
   const location = useLocation();
   const state = location.state;
@@ -39,6 +48,18 @@ function AppRoutes() {
         {/* Landing */}
         <Route path="/" element={<LandingLayout />} />
 
+        {/* Users views */}
+        <Route path="companiesList" element={<CompaniesList />} />
+        <Route path="/company/:id" element={<CompanyDetail />} />
+        <Route
+          path="/reservar/:companyId/:serviceId"
+          element={<ReservationWizard />}
+        />
+        <Route
+          path="/reservar/:companyId/:serviceId/exito"
+          element={<ReservationSuccessPage />}
+        />
+
         {/* Dashboard protegido */}
         <Route
           path="/app/*"
@@ -48,7 +69,7 @@ function AppRoutes() {
         >
           <Route path="calendar" element={<Calendar />} />
           <Route path="company" element={<CompanySelectView />} />
-          <Route path="company/:id" element={<CompanyView />} />
+          <Route path="my-company/:id" element={<CompanyView />} />
           <Route path="job" element={<Job />} />
           <Route path="help" element={<Help />} />
           <Route path="settings" element={<Settings />} />

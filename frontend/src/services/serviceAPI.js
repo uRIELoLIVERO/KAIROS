@@ -1,36 +1,54 @@
-import axios from "axios";
+import axios from 'axios';
 
-class ServiceAPI {
-    static async updateService(staffId, data) {
-        const updatedService = await axios.put(
-            `http://localhost:3000/services/${staffId}`,
-            {
-                name: data.name,
-                description: data.description,
-                suggestedPrice: data.suggestedPrice,
-                suggestedDuration: data.suggestedDuration,
-            },
-            { withCredentials: true }
-        )
-    
-        return updatedService
+// URL base asumiendo que montas el router en /services
+// Si tu app.use() principal usa otro prefijo (ej: /api/v1), ajusta esta URL.
+const BASE_URL = 'http://localhost:3000/services';
+
+const ServiceAPI = {
+    /**
+     * Obtiene todos los servicios del sistema
+     * GET /
+     */
+    getAll: async () => {
+        const { data } = await axios.get(BASE_URL, { withCredentials: true });
+        return data;
+    },
+
+    /**
+     * Obtiene un servicio por ID
+     * GET /:id
+     */
+    getById: async (id) => {
+        const { data } = await axios.get(`${BASE_URL}/${id}`, { withCredentials: true });
+        return data;
+    },
+
+    /**
+     * Crea un nuevo servicio
+     * POST /
+     */
+    create: async (serviceData) => {
+        const { data } = await axios.post(BASE_URL, serviceData, { withCredentials: true });
+        return data;
+    },
+
+    /**
+     * Actualiza un servicio
+     * PUT /:id
+     */
+    update: async (id, serviceData) => {
+        const { data } = await axios.put(`${BASE_URL}/${id}`, serviceData, { withCredentials: true });
+        return data;
+    },
+
+    /**
+     * Elimina un servicio
+     * DELETE /:id
+     */
+    delete: async (id) => {
+        const { data } = await axios.delete(`${BASE_URL}/${id}`, { withCredentials: true });
+        return data;
     }
+};
 
-    static async createService(companyId, data) {
-        const service = await axios.post(
-            'http://localhost:3000/services',
-            {
-                name: data.name,
-                description: data.description,
-                suggestedPrice: data.suggestedPrice,
-                suggestedDuration: data.suggestedDuration,
-                companyId: companyId
-            },
-            { withCredentials: true }
-        )
-    
-        return service
-    }
-}
-
-export default ServiceAPI
+export default ServiceAPI;

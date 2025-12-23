@@ -5,31 +5,31 @@ import { authenticate } from '../middlewares/authenticate.js';
 
 export const companiesRouter = Router();
 
-companiesRouter.use(authenticate);
-
-
-//Get companies where the logged user is staffMember
-companiesRouter.get('/my-companies', CompanyController.getCompaniesByLoggedUser);
-// CRUD
-// Create a new company
-companiesRouter.post('/', CompanyController.createCompany);
-
-// Read all companies
+// Rutas públicas
+// ------------------
 companiesRouter.get('/', CompanyController.getAllCompanies);
 
-// Read a specific company by ID
+// Rutas que NO deben quedar atrás de /:id
+companiesRouter.get('/my-companies', authenticate, CompanyController.getCompaniesByLoggedUser);
+
+// Leer una compañía por ID
 companiesRouter.get('/:id', CompanyController.getCompanyByID);
 
-// Update an existing company by ID
+// CRUD y otras rutas dinámicas (requieren auth)
+// ------------------
+companiesRouter.use(authenticate);
+
+// Crear
+companiesRouter.post('/', CompanyController.createCompany);
+
+// Actualizar
 companiesRouter.patch('/:id', upload.single('icon'), CompanyController.updateCompany);
 
-// Delete a company by ID
+// Eliminar
 companiesRouter.delete('/:id', CompanyController.deleteCompany);
 
-//professionals
-// Get all professionals of a company (and by rol if needed)
+// Professionals
 companiesRouter.get('/:id/professionals', StaffMemberController.getAllByCompany);
 
-//services
-// Get all services of a company (and by rol if needed)
+// Services
 companiesRouter.get('/:id/services', CompanyController.getAllServicesByCompany);

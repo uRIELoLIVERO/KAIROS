@@ -1,4 +1,4 @@
-import { AppointmentModel, CompanyModel, ProfessionalModel, ServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
+import { AppointmentModel, CompanyModel, OfferedServiceModel, ProfessionalModel, ServiceModel, StaffMemberModel } from '../models/sequelize/sequelize.js';
 import { validateCompany, validatePartialCompany } from '../schemas/company.js';
 import crypto from 'crypto';
 import { Op } from 'sequelize';

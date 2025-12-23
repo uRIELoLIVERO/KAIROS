@@ -5,11 +5,11 @@ POST {{baseUrl}}/services
 Content-Type: application/json
 
 {
-  "name": "Masaje terapéutico test v1",
-  "description": "Masaje profundo para aliviar tensiones musculares",
-  "suggestedPrice": 3500,
-  "suggestedDuration": 60,
-  "companyId": "ba7dfa80-6748-11f0-b676-00ff1d8344ad"
+  "name": "test frontend service",
+  "description": "esta es una descripcion de prueba para el servicio creado desde el frontend",
+  "suggestedPrice": 123000,
+  "suggestedDuration": 90,
+  "companyId": "0aed5769-7eae-40c7-9e8f-c10c3b6e8ee5"
 }
 ###
 

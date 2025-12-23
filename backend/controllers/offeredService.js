@@ -1,38 +1,116 @@
-import { OfferedServiceModel, ServiceModel, ProfessionalModel, StaffMemberModel, CompanyModel } from '../models/sequelize/sequelize.js'
+import { OfferedServiceModel, ServiceModel, ProfessionalModel, StaffMemberModel, CompanyModel, UserModel } from '../models/sequelize/sequelize.js'
 import { validateOfferedService, validatePartialOfferedService } from '../schemas/offeredService.js'
 import { Op } from 'sequelize';
+import crypto from 'crypto';
+
 export class OfferedServiceController {
-    // Data formatter for outputs
     static transformOfferedServiceData(offeredService) {
         const data = offeredService.toJSON ? offeredService.toJSON() : offeredService;
         
+        // Extraer datos de manera más robusta
+        const staffMember = data.staff_member || data.StaffMember || {};
+        const serviceData = data.service || data.Service || data.ServiceModel || {};
+        const companyData = serviceData.company || serviceData.Company || {};
+        
+        // Extraer datos del profesional y usuario
+        let userData = {};
+        let professionalData = {};
+        let staffName = 'Staff no asignado';
+        
+        // Verificar múltiples estructuras posibles
+        if (staffMember.professional && staffMember.professional.user) {
+            userData = staffMember.professional.user;
+            professionalData = staffMember.professional;
+        } else if (staffMember.Professional && staffMember.Professional.User) {
+            userData = staffMember.Professional.User;
+            professionalData = staffMember.Professional;
+        } else if (staffMember.Professional && staffMember.Professional.user) {
+            userData = staffMember.Professional.user;
+            professionalData = staffMember.Professional;
+        }
+        
+        // Obtener nombre del staff
+        if (userData.firstName && userData.lastName) {
+            staffName = `${userData.firstName} ${userData.lastName}`;
+        } else if (userData.firstName) {
+            staffName = userData.firstName;
+        } else if (userData.first_name && userData.last_name) {
+            staffName = `${userData.first_name} ${userData.last_name}`;
+        } else if (userData.first_name) {
+            staffName = userData.first_name;
+        }
+        
+        const staffAvatar = professionalData?.profilePicture || professionalData?.profile_picture || null;
+        
+        // Obtener nombre de la empresa - verificar múltiples estructuras
+        let companyName = "Empresa sin nombre";
+        let companyId = null;
+        
+        if (companyData.name) {
+            companyName = companyData.name;
+            companyId = companyData.id;
+        } else if (serviceData.companyName) {
+            companyName = serviceData.companyName;
+        } else if (serviceData.company_name) {
+            companyName = serviceData.company_name;
+        }
+        
+        if (serviceData.companyId) {
+            companyId = serviceData.companyId;
+        } else if (serviceData.company_id) {
+            companyId = serviceData.company_id;
+        }
+        
         const transformedData = {
             id: data.id,
-            staffMemberId: data.staffMember_id || data.staffMemberId,
-            serviceId: data.service_id || data.serviceId,
-            customName: data.custom_name || data.customName,
-            customDescription: data.custom_description || data.customDescription,
-            customDuration: data.custom_duration || data.customDuration,
-            customPrice: data.custom_price || data.customPrice,
-            customBuffer: data.custom_buffer || data.customBuffer,
-            suggestedName: data.service?.name || data.suggestedName,
-            suggestedDescription: data.service?.description || data.suggestedDescription,
-            suggestedDuration: data.service?.duration || data.suggestedDuration,
-            suggestedPrice: data.service?.price || data.suggestedPrice,
-            suggestedBuffer: data.service?.buffer || data.suggestedBuffer,
-            createdAt: data.created_at || data.createdAt,
-            updatedAt: data.updated_at || data.updatedAt,
-            deletedAt: data.deleted_at || data.deletedAt
+            offeredServiceId: data.id,
+            staffMemberId: data.staffMemberId || data.staff_member_id,
+            serviceId: data.serviceId || data.service_id,
+            companyId: companyId,
+
+            customDescription: data.customDescription || data.custom_description,
+            customDuration: data.customDuration || data.custom_duration,
+            customPrice: data.customPrice || data.custom_price,
+            customBuffer: data.customBuffer || data.custom_buffer,
+
+            // --- SERVICE INFO ---
+            serviceName: serviceData.name || "Servicio sin nombre",
+            serviceDescription: serviceData.description,
+            serviceSuggestedDuration: serviceData.suggestedDuration || serviceData.suggested_duration,
+            serviceSuggestedPrice: serviceData.suggestedPrice || serviceData.suggested_price,
+            service: { // Mantener la estructura completa del servicio
+                id: serviceData.id,
+                name: serviceData.name,
+                description: serviceData.description,
+                suggestedDuration: serviceData.suggestedDuration || serviceData.suggested_duration,
+                suggestedPrice: serviceData.suggestedPrice || serviceData.suggested_price,
+                companyId: companyId,
+                company: {
+                    id: companyId,
+                    name: companyName
+                }
+            },
+
+            // --- COMPANY INFO ---
+            companyName: companyName,
+
+            // --- UI-FRIENDLY INFO ---
+            name: serviceData.name || "Servicio sin nombre",
+            description: data.customDescription || data.custom_description || serviceData.description,
+            duration: data.customDuration || data.custom_duration || serviceData.suggestedDuration,
+            price: data.customPrice || data.custom_price || serviceData.suggestedPrice,
+
+            staffName: staffName,
+            staffAvatar: staffAvatar,
+
+            createdAt: data.createdAt || data.created_at,
+            updatedAt: data.updatedAt || data.updated_at,
         };
-        
-        transformedData.name = transformedData.customName || transformedData.suggestedName;
-        transformedData.description = transformedData.customDescription || transformedData.suggestedDescription;
-        transformedData.duration = transformedData.customDuration || transformedData.suggestedDuration;
-        transformedData.price = transformedData.customPrice || transformedData.suggestedPrice;
-        
+
+        // Eliminar campos undefined/null
         Object.keys(transformedData).forEach(key => {
             if (transformedData[key] === undefined) {
-                delete transformedData[key];
+                transformedData[key] = null;
             }
         });
         
@@ -51,9 +129,14 @@ export class OfferedServiceController {
                 id: crypto.randomUUID()
             };
 
-            // Include the related service to get suggested values
             const newOfferedService = await OfferedServiceModel.create(data, {
-                include: [ServiceModel]
+                include: [ServiceModel, {
+                    model: StaffMemberModel,
+                    include: [{
+                        model: ProfessionalModel,
+                        include: [UserModel]
+                    }]
+                }]
             });
 
             return res.status(201).json(
@@ -71,7 +154,16 @@ export class OfferedServiceController {
             
             const offeredServices = await OfferedServiceModel.findAll({
                 where: { staffMemberId: staffMemberId },
-                include: [ServiceModel], // Include service to get suggested values
+                include: [
+                    ServiceModel,
+                    {
+                        model: StaffMemberModel,
+                        include: [{
+                            model: ProfessionalModel,
+                            include: [UserModel]
+                        }]
+                    }
+                ],
                 raw: false
             });
 
@@ -104,9 +196,17 @@ export class OfferedServiceController {
                 where: { id } 
             });
             
-            // Get the updated offered service with its related service
             const updatedOfferedService = await OfferedServiceModel.findByPk(id, {
-                include: [ServiceModel]
+                include: [
+                    ServiceModel,
+                    {
+                        model: StaffMemberModel,
+                        include: [{
+                            model: ProfessionalModel,
+                            include: [UserModel]
+                        }]
+                    }
+                ]
             });
 
             if (!updatedOfferedService) {
@@ -127,7 +227,16 @@ export class OfferedServiceController {
             const { id } = req.params;
             
             const offeredService = await OfferedServiceModel.findByPk(id, {
-                include: [ServiceModel]
+                include: [
+                    ServiceModel,
+                    {
+                        model: StaffMemberModel,
+                        include: [{
+                            model: ProfessionalModel,
+                            include: [UserModel]
+                        }]
+                    }
+                ]
             });
             
             if (!offeredService) {
@@ -161,7 +270,6 @@ export class OfferedServiceController {
 
     static async getMyOfferedServices(req, res) {
         try {
-            // 1. Obtener el profesional asociado al usuario
             const professional = await ProfessionalModel.findOne({
                 where: { userId: req.user.id }
             });
@@ -169,7 +277,6 @@ export class OfferedServiceController {
                 return res.status(404).json({ error: 'Professional not found' });
             }
             
-            // 2. Obtener los staff members del profesional
             const staffMembers = await StaffMemberModel.findAll({
                 where: { professionalId: professional.id }
             });
@@ -178,18 +285,26 @@ export class OfferedServiceController {
                 return res.status(404).json({ error: 'No staff members found' });
             }
 
-            // 3. Obtener los offeredServices de los staffMembers
             const offeredServices = await OfferedServiceModel.findAll({
                 where: { staffMemberId: { [Op.in]: staffMembers.map(sm => sm.id) } },
                 include: [
                     {
                         model: ServiceModel,
+                        as: 'service',
                         include: [
                             {
                                 model: CompanyModel,
+                                as: 'company',
                                 attributes: ['id', 'name']
                             }
                         ]
+                    },
+                    {
+                        model: StaffMemberModel,
+                        include: [{
+                            model: ProfessionalModel,
+                            include: [UserModel]
+                        }]
                     }
                 ],
                 raw: false
@@ -199,10 +314,172 @@ export class OfferedServiceController {
                 return res.status(404).json({ error: 'No offered services found for this professional' });
             }
             
-            return res.status(200).json(offeredServices);
+            const transformedServices = offeredServices.map(service => 
+                OfferedServiceController.transformOfferedServiceData(service)
+            );
+            
+            return res.status(200).json(transformedServices);
         } catch (error) {
             console.error('Error:', error);
             return res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+    static async getOfferedServiceById(req, res) {
+        try {
+            const { id } = req.params;
+            
+            const offeredService = await OfferedServiceModel.findByPk(id, {
+                include: [
+                    {
+                        model: ServiceModel,
+                        attributes: ['id', 'name', 'description', 'suggestedPrice', 'suggestedDuration']
+                    },
+                    {
+                        model: StaffMemberModel,
+                        attributes: ['id'],
+                        include: [{
+                            model: ProfessionalModel,
+                            attributes: ['id', 'profilePicture'],
+                            include: [{
+                                model: UserModel,
+                                attributes: ['id', 'firstName', 'lastName']
+                            }]
+                        }]
+                    }
+                ],
+                attributes: [
+                    'id', 
+                    'customPrice', 
+                    'customDuration', 
+                    'customDescription',
+                    'serviceId',
+                    'staffMemberId'
+                ]
+            });
+            
+            if (!offeredService) {
+                return res.status(404).json({ 
+                    message: 'Servicio no encontrado',
+                    data: null 
+                });
+            }
+            
+            const formattedService = OfferedServiceController.transformOfferedServiceData(offeredService);
+            
+            res.status(200).json(formattedService);
+            
+        } catch (error) {
+            console.error('Error en getOfferedServiceById:', error);
+            res.status(500).json({ 
+                message: 'Error interno del servidor',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+
+    static async getAllOfferedServicesByCompany(req, res) {
+        try {
+            const { companyId } = req.params;
+
+            if (!companyId) {
+                return res.status(400).json({ 
+                    message: 'ID de empresa inválido' 
+                });
+            }
+        
+            const offeredServices = await OfferedServiceModel.findAll({
+                include: [
+                    {
+                        model: ServiceModel,
+                        where: { companyId: companyId },
+                        required: true,
+                        attributes: ['id', 'name', 'description', 'suggestedPrice', 'suggestedDuration']
+                    },
+                    {
+                        model: StaffMemberModel,
+                        attributes: ['id'],
+                        include: [{
+                            model: ProfessionalModel,
+                            attributes: ['id', 'profilePicture'],
+                            include: [{
+                                model: UserModel,
+                                attributes: ['id', 'firstName', 'lastName']
+                            }]
+                        }]
+                    }
+                ],
+                attributes: [
+                    'id', 
+                    'customPrice', 
+                    'customDuration', 
+                    'customDescription',
+                    'serviceId',
+                    'staffMemberId'
+                ]
+            });
+            
+            if (!offeredServices || offeredServices.length === 0) {
+                return res.status(404).json({ 
+                    message: 'No se encontraron servicios para esta empresa',
+                    data: [] 
+                });
+            }
+            
+            const formattedServices = offeredServices.map(service => 
+                OfferedServiceController.transformOfferedServiceData(service)
+            );
+            
+            res.status(200).json(formattedServices);
+            
+        } catch (error) {
+            console.error('Error en getOfferedServicesByCompany:', error);
+            res.status(500).json({ 
+                message: 'Error interno del servidor',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+    }
+
+    static async getOfferedServiceById(req, res) {
+        try {
+            const { id } = req.params;
+            
+            const offeredService = await OfferedServiceModel.findByPk(id, {
+                include: [
+                    ServiceModel,
+                    {
+                        model: StaffMemberModel,
+                        attributes: ['id'],
+                        include: [{
+                            model: ProfessionalModel,
+                            attributes: ['id', 'profilePicture'],
+                            include: [{
+                                model: UserModel,
+                                attributes: ['id', 'firstName', 'lastName']
+                            }]
+                        }]
+                    }
+                ]
+            });
+            
+            if (!offeredService) {
+                return res.status(404).json({ 
+                    message: 'Servicio no encontrado',
+                    data: null 
+                });
+            }
+            
+            const formattedService = OfferedServiceController.transformOfferedServiceData(offeredService);
+            
+            res.status(200).json(formattedService);
+            
+        } catch (error) {
+            console.error('Error en getOfferedServiceById:', error);
+            res.status(500).json({ 
+                message: 'Error interno del servidor',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
         }
     }
 }

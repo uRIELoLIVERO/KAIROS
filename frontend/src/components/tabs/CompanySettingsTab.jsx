@@ -8,7 +8,7 @@ import {
   Grid,
   CircularProgress,
   Avatar,
-  Alert
+  Alert,
 } from "@mui/material";
 
 const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
@@ -49,17 +49,17 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
     const file = event.target.files?.[0] || null;
     if (file) {
       // Validar tipo de archivo
-      if (!file.type.startsWith('image/')) {
-        setError('Solo se permiten archivos de imagen');
+      if (!file.type.startsWith("image/")) {
+        setError("Solo se permiten archivos de imagen");
         return;
       }
-      
+
       // Validar tamaño de archivo (5MB máximo)
       if (file.size > 5 * 1024 * 1024) {
-        setError('La imagen no debe superar los 5MB');
+        setError("La imagen no debe superar los 5MB");
         return;
       }
-      
+
       setForm((prev) => ({ ...prev, icon: file }));
       setPreview(URL.createObjectURL(file));
       setHasChanges(true);
@@ -86,12 +86,12 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("location", form.location);
-      
+
       // Si hay una imagen nueva, agregarla
       if (form.icon) {
         formData.append("icon", form.icon);
       }
-      
+
       // Si hay una imagen anterior, enviar su referencia para posible eliminación
       if (company?.icon) {
         formData.append("oldIcon", company.icon);
@@ -132,7 +132,7 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
       )}
 
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             label="Nombre de la empresa"
             value={form.name}
@@ -143,7 +143,7 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             label="Ubicación"
             value={form.location}
@@ -155,7 +155,7 @@ const CompanySettingsTab = ({ company, canEdit, onUpdate }) => {
         </Grid>
 
         {/* Campo para subir icono */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
               src={preview || ""}

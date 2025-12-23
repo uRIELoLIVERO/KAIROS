@@ -317,4 +317,60 @@ export class AvailabilityController {
         return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  static async getStaffAvailabilityWithSlots(req, res) {
+      try {
+          const { staffMemberId } = req.params;
+          
+          // Buscar la disponibilidad del staff member
+          const availability = await AvailabilityModel.findOne({
+              where: { staffMemberId },
+              include: [{
+                  model: AvailabilityDayModel,
+                  where: { isEnabled: true },
+                  include: [{
+                      model: TimeSlotModel,
+                      attributes: ['id', 'startTime', 'endTime']
+                  }]
+              }]
+          });
+          
+          if (!availability) {
+              return res.status(200).json({
+                  availableDays: [],
+                  timeSlots: []
+              });
+          }
+          
+          // Formatear días disponibles
+          const availableDays = availability.AvailabilityDays.map(day => day.dayOfWeek);
+          
+          // Formatear time slots con información de día
+          const timeSlots = availability.AvailabilityDays.flatMap(day => 
+              day.TimeSlots.map(slot => ({
+                  id: slot.id,
+                  dayOfWeek: day.dayOfWeek,
+                  startTime: slot.startTime,
+                  endTime: slot.endTime,
+                  isBooked: false // Por defecto
+              }))
+          );
+          
+          // Opcional: Marcar slots ya reservados
+          // Necesitarías verificar contra appointments existentes
+          
+          return res.status(200).json({
+              staffMemberId,
+              availableDays,
+              timeSlots
+          });
+          
+      } catch (error) {
+          console.error('Error fetching staff availability:', error);
+          return res.status(500).json({ 
+              error: 'Internal server error',
+              details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          });
+      }
+  }
 }

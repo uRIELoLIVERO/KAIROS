@@ -44,5 +44,29 @@ export default class OfferedServiceAPI {
         );
         return updatedOfferedService;
     }
+
+    static async getServiceById(serviceId) {
+        const { data } = await axios.get(
+            `http://localhost:3000/offered-services/${serviceId}`,  
+            { withCredentials: true }
+        );
+        return data;
+    }
+    
+    static async getOfferedServicesByCompany(companyId) {
+        const { data } = await axios.get(
+            `http://localhost:3000/offered-services/company/${companyId}`, 
+            { withCredentials: true }
+        );
+        return data;
+    }
+    
+    static async getOfferedServicesByProfessional(staffMemberId) {
+        const { data } = await axios.get(
+            `http://localhost:3000/offered-services/staff/${staffMemberId}`,
+            { withCredentials: true }
+        );
+        return data;
+    }
 }
 

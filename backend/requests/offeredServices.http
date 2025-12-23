@@ -29,3 +29,5 @@ Content-Type: application/json
 ### Eliminar un servicio ofrecido
 DELETE http://localhost:3000/offered-services/bb4d742b-bd51-4afa-8931-537013dc4be6
  
+### Obtener todos los servicios ofrecidos públicos de una empresa específica
+GET http://localhost:3000/offered-services/0aed5769-7eae-40c7-9e8f-c10c3b6e8ee5/company

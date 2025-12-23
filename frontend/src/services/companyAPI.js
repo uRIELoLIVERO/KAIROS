@@ -14,6 +14,19 @@ class CompanyAPI {
   }
 
   /**
+   * Obtiene TODAS las empresas disponibles (NUEVA FUNCIÓN)
+   * Endpoint: /companies
+   * @returns {Promise<Array>} Lista de todas las empresas
+   */
+  static async getAllCompanies() {
+    const { data } = await axios.get(
+      'http://localhost:3000/companies/', 
+      { withCredentials: true }
+    );
+    return data;
+  }
+
+  /**
    * Crea una nueva empresa
    * @param {string} name - Nombre de la empresa
    * @returns {Promise<Object>} Datos de la empresa creada
