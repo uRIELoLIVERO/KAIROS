@@ -826,10 +826,40 @@ const AvailabilityDialog = React.memo(({ open, onClose, staffMemberId }) => {
               ) : daysError ? (
                 <Alert severity="error">{daysError}</Alert>
               ) : days.length === 0 ? (
-                <Alert severity="warning" sx={{ m: 2 }}>
-                  No se encontraron días configurados para este horario. Si el
-                  error persiste, contacte a soporte.
-                </Alert>
+                <Box
+                  sx={{
+                    p: 4,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 2,
+                    textAlign: "center",
+                  }}
+                >
+                  <EventBusyIcon
+                    color="warning"
+                    sx={{ fontSize: 48, opacity: 0.5 }}
+                  />
+                  <Alert
+                    severity="warning"
+                    sx={{ width: "100%", justifyContent: "center" }}
+                  >
+                    Tu horario base existe, pero no se han generado los días de
+                    la semana.
+                  </Alert>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCreateAvailability} // Reutilizamos la función para intentar regenerarlos
+                    disabled={isCreating}
+                  >
+                    {isCreating ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Inicializar Días de la Semana"
+                    )}
+                  </Button>
+                </Box>
               ) : (
                 <Stack spacing={2}>
                   {formattedDays.map((day) => (
