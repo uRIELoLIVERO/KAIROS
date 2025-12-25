@@ -27,12 +27,51 @@ export const useOfferedServices = () => {
     }, [fetchServices]);
 
     const updateService = async (id, payload) => {
+        
         try {
-            await OfferedServiceAPI.updateOfferedService(id, payload);
-            await fetchServices();
-            return { success: true };
+            const response = await OfferedServiceAPI.updateOfferedService(id, payload);
+            
+            if (response && response.data) {
+                
+                // Actualiza el estado local con los datos del backend
+                setServices(prevServices => {
+                    const updated = prevServices.map(service => {
+                        if (service.id === id) {
+                            return {
+                                ...service,
+                                customPrice: response.data.customPrice,
+                                customDuration: response.data.customDuration,
+                                customDescription: response.data.customDescription,
+                                customBuffer: response.data.customBuffer || response.data.buffer || 0,
+                                buffer: response.data.buffer || response.data.customBuffer || 0
+                            };
+                        }
+                        return service;
+                    });
+                    
+                    return updated;
+                });
+                
+                return { success: true, data: response.data };
+            } else {
+                console.error("❌ No hay datos en la respuesta del backend");
+                return { success: false, error: "No se recibieron datos del servidor" };
+            }
         } catch (err) {
-            return { success: false, error: err.response?.data?.message || "Error al actualizar" };
+            console.error("💥 Error completo en updateService:", {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                stack: err.stack
+            });
+            
+            return { 
+                success: false, 
+                error: err.response?.data?.message || 
+                    err.response?.data?.error || 
+                    err.message || 
+                    "Error al actualizar" 
+            };
         }
     };
 

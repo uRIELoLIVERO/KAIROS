@@ -61,6 +61,17 @@ export class OfferedServiceController {
             companyId = serviceData.company_id;
         }
         
+         // Obtener buffer - priorizar customBuffer, luego suggestedBuffer del servicio
+        const customBuffer = data.customBuffer ||
+                            data.custom_buffer || 
+                            null;
+        
+        const serviceSuggestedBuffer = serviceData.suggestedBuffer || 
+                                    serviceData.suggested_buffer || 
+                                    0;
+        
+        const finalBuffer = customBuffer !== null ? customBuffer : serviceSuggestedBuffer;
+
         const transformedData = {
             id: data.id,
             offeredServiceId: data.id,
@@ -71,7 +82,7 @@ export class OfferedServiceController {
             customDescription: data.customDescription || data.custom_description,
             customDuration: data.customDuration || data.custom_duration,
             customPrice: data.customPrice || data.custom_price,
-            customBuffer: data.customBuffer || data.custom_buffer,
+            customBuffer: finalBuffer,
 
             // --- SERVICE INFO ---
             serviceName: serviceData.name || "Servicio sin nombre",
@@ -84,6 +95,7 @@ export class OfferedServiceController {
                 description: serviceData.description,
                 suggestedDuration: serviceData.suggestedDuration || serviceData.suggested_duration,
                 suggestedPrice: serviceData.suggestedPrice || serviceData.suggested_price,
+                suggestedBuffer: serviceData.suggestedBuffer || serviceData.suggested_buffer || 0,
                 companyId: companyId,
                 company: {
                     id: companyId,
@@ -99,6 +111,7 @@ export class OfferedServiceController {
             description: data.customDescription || data.custom_description || serviceData.description,
             duration: data.customDuration || data.custom_duration || serviceData.suggestedDuration,
             price: data.customPrice || data.custom_price || serviceData.suggestedPrice,
+            buffer: finalBuffer,
 
             staffName: staffName,
             staffAvatar: staffAvatar,
@@ -190,12 +203,40 @@ export class OfferedServiceController {
             if (!result.success) {
                 return res.status(400).json({ error: result.error.message });
             }
-            const data = result.data;
-
-            await OfferedServiceModel.update(data, { 
+            
+            const updateData = {};
+            if (result.data.customPrice !== undefined) {
+                updateData.customPrice = result.data.customPrice; 
+            }
+            if (result.data.customDuration !== undefined) {
+                updateData.customDuration = result.data.customDuration; 
+            }
+            if (result.data.customDescription !== undefined) {
+                updateData.customDescription = result.data.customDescription;
+            }
+            if (result.data.customBuffer !== undefined) {
+                updateData.customBuffer = result.data.customBuffer; 
+            }
+            
+            console.log("💾 Datos para Sequelize (deben ser camelCase):", updateData);
+            
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ error: "No se proporcionaron datos para actualizar" });
+            }
+            
+            // Ejecutar update
+            const [affectedRows] = await OfferedServiceModel.update(updateData, { 
                 where: { id } 
             });
             
+            console.log("📈 Filas afectadas en DB:", affectedRows);
+            
+            if (affectedRows === 0) {
+                console.warn("⚠️ No se actualizó ninguna fila - ID puede no existir");
+                return res.status(404).json({ error: 'Offered service not found' });
+            }
+            
+            // Obtener el servicio actualizado
             const updatedOfferedService = await OfferedServiceModel.findByPk(id, {
                 include: [
                     ServiceModel,
@@ -210,15 +251,25 @@ export class OfferedServiceController {
             });
 
             if (!updatedOfferedService) {
-                return res.status(404).json({ error: 'Offered service not found' });
+                console.error("❌ No se pudo encontrar el servicio después de actualizar");
+                return res.status(404).json({ error: 'Offered service not found after update' });
             }
 
-            return res.status(200).json(
-                OfferedServiceController.transformOfferedServiceData(updatedOfferedService)
-            );
+            const responseData = OfferedServiceController.transformOfferedServiceData(updatedOfferedService);
+            
+            console.log("✅ Actualización exitosa - Datos devueltos:", {
+                id: responseData.id,
+                customPrice: responseData.customPrice,
+                customDuration: responseData.customDuration,
+                customBuffer: responseData.customBuffer,
+                customDescription: responseData.customDescription
+            });
+            
+            return res.status(200).json(responseData);
         } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: 'Internal server error' });
+            console.error('💥 Error en updateOfferedService:', error);
+            console.error('🔍 Stack trace:', error.stack);
+            return res.status(500).json({ error: 'Internal server error', details: error.message });
         }
     }
 
@@ -325,59 +376,6 @@ export class OfferedServiceController {
         }
     }
 
-    static async getOfferedServiceById(req, res) {
-        try {
-            const { id } = req.params;
-            
-            const offeredService = await OfferedServiceModel.findByPk(id, {
-                include: [
-                    {
-                        model: ServiceModel,
-                        attributes: ['id', 'name', 'description', 'suggestedPrice', 'suggestedDuration']
-                    },
-                    {
-                        model: StaffMemberModel,
-                        attributes: ['id'],
-                        include: [{
-                            model: ProfessionalModel,
-                            attributes: ['id', 'profilePicture'],
-                            include: [{
-                                model: UserModel,
-                                attributes: ['id', 'firstName', 'lastName']
-                            }]
-                        }]
-                    }
-                ],
-                attributes: [
-                    'id', 
-                    'customPrice', 
-                    'customDuration', 
-                    'customDescription',
-                    'serviceId',
-                    'staffMemberId'
-                ]
-            });
-            
-            if (!offeredService) {
-                return res.status(404).json({ 
-                    message: 'Servicio no encontrado',
-                    data: null 
-                });
-            }
-            
-            const formattedService = OfferedServiceController.transformOfferedServiceData(offeredService);
-            
-            res.status(200).json(formattedService);
-            
-        } catch (error) {
-            console.error('Error en getOfferedServiceById:', error);
-            res.status(500).json({ 
-                message: 'Error interno del servidor',
-                error: process.env.NODE_ENV === 'development' ? error.message : undefined
-            });
-        }
-    }
-
     static async getAllOfferedServicesByCompany(req, res) {
         try {
             const { companyId } = req.params;
@@ -450,14 +448,9 @@ export class OfferedServiceController {
                     ServiceModel,
                     {
                         model: StaffMemberModel,
-                        attributes: ['id'],
                         include: [{
                             model: ProfessionalModel,
-                            attributes: ['id', 'profilePicture'],
-                            include: [{
-                                model: UserModel,
-                                attributes: ['id', 'firstName', 'lastName']
-                            }]
+                            include: [UserModel]
                         }]
                     }
                 ]

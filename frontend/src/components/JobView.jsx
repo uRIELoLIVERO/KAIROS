@@ -870,6 +870,7 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
     customPrice: "",
     customDuration: "",
     customDescription: "",
+    customBuffer: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -878,12 +879,16 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
       const suggestedPrice = offeredService.service?.suggestedPrice || 0;
       const suggestedDuration = offeredService.service?.suggestedDuration || 0;
       const serviceDescription = offeredService.service?.description || "";
+      const suggestedBuffer = offeredService.service?.suggestedBuffer || 0;
+
       setForm({
         customPrice: offeredService.customPrice ?? suggestedPrice,
         customDuration: offeredService.customDuration ?? suggestedDuration,
         customDescription:
           offeredService.customDescription ?? serviceDescription,
+        customBuffer: offeredService.customBuffer ?? suggestedBuffer,
       });
+
       setErrors({});
       setTimeout(() => firstFieldRef.current?.focus(), 50);
     }
@@ -901,17 +906,24 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
       e.customPrice = "El precio debe ser mayor a 0";
     if (form.customDuration === "" || Number(form.customDuration) <= 0)
       e.customDuration = "La duración debe ser mayor a 0";
+    if (form.customBuffer === "" || Number(form.customBuffer) < 0)
+      e.customBuffer = "El tiempo de buffer no puede ser negativo";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSubmit = () => {
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
+
     const payload = {
       customPrice: Number(form.customPrice),
       customDuration: Number(form.customDuration),
       customDescription: form.customDescription?.trim() || null,
+      customBuffer: Number(form.customBuffer),
     };
+
     onSubmit(payload);
   };
 
@@ -919,6 +931,7 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
   const suggestedDuration = offeredService?.service?.suggestedDuration ?? "-";
   const serviceDescription =
     offeredService?.service?.description || "Sin descripción";
+  const suggestedBuffer = offeredService?.service?.suggestedBuffer ?? 0;
 
   return (
     <Dialog
@@ -961,6 +974,29 @@ function OfferedServiceEditDialog({ open, onClose, onSubmit, offeredService }) {
             inputProps={{ min: 1 }}
           />
           <TextField
+            label="Buffer personalizado (minutos)"
+            name="customBuffer"
+            type="number"
+            value={form.customBuffer}
+            onChange={handleChange}
+            error={!!errors.customBuffer}
+            helperText={
+              errors.customBuffer || `Buffer sugerido: ${suggestedBuffer} min`
+            }
+            fullWidth
+            inputProps={{
+              min: 0,
+              step: 1,
+            }}
+            onBlur={(e) => {
+              // Asegúrate de que sea un número
+              const value = e.target.value;
+              if (value === "") {
+                setForm((prev) => ({ ...prev, customBuffer: 0 }));
+              }
+            }}
+          />
+          <TextField
             label="Descripción personalizada"
             name="customDescription"
             value={form.customDescription}
@@ -996,6 +1032,7 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
   const price = item.customPrice ?? item.service?.suggestedPrice ?? 0;
   const duration =
     item.customDuration ?? item.service?.suggestedDuration ?? "-";
+  const buffer = item.customBuffer ?? item.service?.suggestedBuffer ?? 0;
   const description = item.customDescription || item.service?.description || "";
   const [menuAnchor, setMenuAnchor] = useState(null);
 
@@ -1106,6 +1143,12 @@ function OfferedServiceCard({ item, onEdit, onDelete }) {
             label={formatCurrency(price)}
             size="small"
             color="success"
+            variant="outlined"
+          />
+          <Chip
+            label={`Buffer: ${buffer} min`}
+            size="small"
+            color="warning"
             variant="outlined"
           />
         </Stack>
@@ -1302,6 +1345,8 @@ export default function JobView() {
         customPrice: item.customPrice,
         customDuration: item.customDuration,
         customDescription: item.customDescription,
+        customBuffer: item.customBuffer,
+        buffer: item.customBuffer,
         createdAt: item.createdAt,
       };
     });

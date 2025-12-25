@@ -1,3 +1,4 @@
+import company from '../models/sequelize/company.js';
 import { ServiceModel } from '../models/sequelize/sequelize.js';
 import { validateService, validatePartialService } from '../schemas/service.js';
 import crypto from 'crypto';
@@ -32,13 +33,13 @@ export class ServiceController {
     static async createService(req, res) {
         try {
             const resultService = validatePartialService(req.body);
-            if (!resultService.success) return res.status(400).json({ error: error.message });
+            if (!resultService.success) return res.status(400).json({ error: resultService.error.message });
 
             const newService = await ServiceModel.create({
                 ...resultService.data,
-                id: crypto.randomUUID(),
-
+                id: crypto.randomUUID()
             });
+
             return res.status(201).json(ServiceController.transformServiceData(newService));
         } catch (error) {
             console.error('Error:', error);

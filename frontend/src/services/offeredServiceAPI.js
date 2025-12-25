@@ -9,7 +9,8 @@ export default class OfferedServiceAPI {
                 "serviceId": data.serviceId,
                 "customPrice": data.customPrice,
                 "customDuration": data.customDuration,
-                "customDescription": data.customDescription
+                "customDescription": data.customDescription,
+                "customBuffer": data.customBuffer
             },
             { withCredentials: true }
         );
@@ -33,16 +34,37 @@ export default class OfferedServiceAPI {
     }
 
     static async updateOfferedService(offeredServiceId, data) {
-        const updatedOfferedService = await axios.put(
-            `http://localhost:3000/offered-services/${offeredServiceId}`,
-            {
-                "customPrice": data.customPrice,
-                "customDuration": data.customDuration,
-                "customDescription": data.customDescription
-            },
-            { withCredentials: true }
-        );
-        return updatedOfferedService;
+        // 1. Sanity check: Verificamos antes de enviar
+        if (!data) {
+            console.error("❌ Error: Intentando actualizar sin datos (data es null o undefined)");
+            throw new Error("No se proporcionaron datos para actualizar");
+        }
+
+        console.log("📡 OfferedServiceAPI.updateOfferedService llamado:", {
+            id: offeredServiceId,
+            payload: data
+        });
+        
+        try {
+            
+            const cleanPayload = { ...data };
+
+            const response = await axios.put(
+                `http://localhost:3000/offered-services/${offeredServiceId}`,
+                cleanPayload, 
+                { 
+                    withCredentials: true 
+                }
+            );
+            
+            console.log("✅ Respuesta de API exitosa:", response.data);
+            return response;
+        } catch (error) {
+            console.error("❌ Error en API call updateOfferedService:", {
+                message: error.message
+            });
+            throw error;
+        }
     }
 
     static async getServiceById(serviceId) {

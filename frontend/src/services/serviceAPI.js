@@ -9,7 +9,7 @@ const ServiceAPI = {
      * Obtiene todos los servicios del sistema
      * GET /
      */
-    getAll: async () => {
+    getAllServices: async () => {
         const { data } = await axios.get(BASE_URL, { withCredentials: true });
         return data;
     },
@@ -18,8 +18,13 @@ const ServiceAPI = {
      * Obtiene un servicio por ID
      * GET /:id
      */
-    getById: async (id) => {
-        const { data } = await axios.get(`${BASE_URL}/${id}`, { withCredentials: true });
+    getServiceById: async (id) => {
+        const { data } = await axios.get(`${BASE_URL}/${id}`, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
         return data;
     },
 
@@ -27,7 +32,7 @@ const ServiceAPI = {
      * Crea un nuevo servicio
      * POST /
      */
-    create: async (serviceData) => {
+    createService: async (serviceData) => {
         const { data } = await axios.post(BASE_URL, serviceData, { withCredentials: true });
         return data;
     },
@@ -36,7 +41,7 @@ const ServiceAPI = {
      * Actualiza un servicio
      * PUT /:id
      */
-    update: async (id, serviceData) => {
+    updateService: async (id, serviceData) => {
         const { data } = await axios.put(`${BASE_URL}/${id}`, serviceData, { withCredentials: true });
         return data;
     },
@@ -45,7 +50,7 @@ const ServiceAPI = {
      * Elimina un servicio
      * DELETE /:id
      */
-    delete: async (id) => {
+    deleteService: async (id) => {
         const { data } = await axios.delete(`${BASE_URL}/${id}`, { withCredentials: true });
         return data;
     }

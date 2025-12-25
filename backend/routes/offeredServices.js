@@ -11,7 +11,6 @@ offeredServicesRouter.get('/staff/:staffMemberId', authenticate, OfferedServiceC
 
 offeredServicesRouter.get('/:id', OfferedServiceController.getOfferedServiceById);
 
-offeredServicesRouter.use(authenticate);
-offeredServicesRouter.post('/', OfferedServiceController.createOfferedService);
-offeredServicesRouter.put('/:id', OfferedServiceController.updateOfferedService);
-offeredServicesRouter.delete('/:id', OfferedServiceController.deleteOfferedService);
+offeredServicesRouter.post('/', authenticate, OfferedServiceController.createOfferedService);
+offeredServicesRouter.put('/:id', authenticate, OfferedServiceController.updateOfferedService);
+offeredServicesRouter.delete('/:id', authenticate, OfferedServiceController.deleteOfferedService);

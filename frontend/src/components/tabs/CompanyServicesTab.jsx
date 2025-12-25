@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -9,16 +9,16 @@ import {
   Stack,
   Skeleton,
   Snackbar,
-  Alert
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import CompanyAPI from '../../services/companyAPI';
-import ServiceAPI from '../../services/serviceAPI';
-import StaffMemberAPI from '../../services/staffMemberAPI';
-import OfferedServiceAPI from '../../services/offeredServiceAPI';
-import { formatCurrency } from '../../utils/helpers';
-import ServiceModal from '../modal/ServiceModal';
-import ProvideServiceModal from '../modal/ProvideServiceModal';
+  Alert,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import CompanyAPI from "../../services/companyAPI";
+import ServiceAPI from "../../services/serviceAPI";
+import StaffMemberAPI from "../../services/staffMemberAPI";
+import OfferedServiceAPI from "../../services/offeredServiceAPI";
+import { formatCurrency } from "../../utils/helpers";
+import ServiceModal from "../modal/ServiceModal";
+import ProvideServiceModal from "../modal/ProvideServiceModal";
 
 /**
  * Componente para mostrar una tarjeta de servicio
@@ -29,12 +29,12 @@ const ServiceCard = ({ service, canEdit, canProvide, onEdit, onProvide }) => (
     sx={{
       borderRadius: 3,
       boxShadow: 2,
-      height: 220,
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'transform 0.2s, box-shadow 0.2s',
-      '&:hover': {
-        transform: 'translateY(-4px)',
+      height: 240,
+      display: "flex",
+      flexDirection: "column",
+      transition: "transform 0.2s, box-shadow 0.2s",
+      "&:hover": {
+        transform: "translateY(-4px)",
         boxShadow: 6,
       },
     }}
@@ -42,10 +42,10 @@ const ServiceCard = ({ service, canEdit, canProvide, onEdit, onProvide }) => (
     <CardContent
       sx={{
         flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         p: { xs: 2, sm: 3 },
-        '&:last-child': { pb: { xs: 2, sm: 3 } },
+        "&:last-child": { pb: { xs: 2, sm: 3 } },
       }}
     >
       {/* Nombre del servicio */}
@@ -54,26 +54,33 @@ const ServiceCard = ({ service, canEdit, canProvide, onEdit, onProvide }) => (
         fontWeight={700}
         gutterBottom
         sx={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          display: '-webkit-box',
-          WebkitLineClamp: 2, 
-          WebkitBoxOrient: 'vertical',
-          minHeight: '1.6em', 
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          minHeight: "1.6em",
         }}
       >
         {service.name}
       </Typography>
 
       {/* Duración y precio en línea */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="body2" color="text.secondary" >
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+        <Typography variant="body2" color="text.secondary">
           ⏱ {service.suggestedDuration}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           💲 {formatCurrency(service.suggestedPrice)}
         </Typography>
       </Box>
+      {service.suggestedBuffer > 0 && (
+        <Box sx={{ mb: 1 }}>
+          <Typography variant="body2" color="warning.main">
+            ⏳ Buffer: {service.suggestedBuffer} min
+          </Typography>
+        </Box>
+      )}
 
       {/* Descripción */}
       {service.description && (
@@ -82,13 +89,13 @@ const ServiceCard = ({ service, canEdit, canProvide, onEdit, onProvide }) => (
           color="text.secondary"
           sx={{
             mt: 1,
-            fontStyle: 'italic',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
+            fontStyle: "italic",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
             WebkitLineClamp: 3, // máximo 3 líneas
-            WebkitBoxOrient: 'vertical',
-            minHeight: '3.9em', // altura fija para 3 líneas
+            WebkitBoxOrient: "vertical",
+            minHeight: "3.9em", // altura fija para 3 líneas
           }}
         >
           {service.description}
@@ -96,7 +103,7 @@ const ServiceCard = ({ service, canEdit, canProvide, onEdit, onProvide }) => (
       )}
 
       {/* Botones alineados abajo */}
-      <Stack direction="row" spacing={1} sx={{ mt: 'auto', py: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ mt: "auto", py: 1 }}>
         {canEdit && (
           <Button
             size="small"
@@ -152,9 +159,8 @@ const CompanyServicesTab = ({ companyId, canEdit, canProvide }) => {
           const resolvedStaffData = await Promise.all(staffData);
           setStaffMembers(resolvedStaffData);
         }
-
       } catch (err) {
-        setError(err?.response?.data?.message || 'Error al cargar los datos');
+        setError(err?.response?.data?.message || "Error al cargar los datos");
       } finally {
         setLoading(false);
       }
@@ -196,35 +202,52 @@ const CompanyServicesTab = ({ companyId, canEdit, canProvide }) => {
   const handleServiceSubmit = async (serviceData) => {
     try {
       if (editingService) {
-        await ServiceAPI.updateService(editingService.id, serviceData);
-        showSuccess('Servicio actualizado correctamente');
+        const result = await ServiceAPI.updateService(
+          editingService.id,
+          serviceData
+        );
+        showSuccess("Servicio actualizado correctamente");
       } else {
-        await ServiceAPI.createService(companyId, serviceData);
-        showSuccess('Servicio creado correctamente');
+        const payload = {
+          name: serviceData.name,
+          description: serviceData.description || "",
+          suggestedPrice: serviceData.suggestedPrice,
+          suggestedDuration: serviceData.suggestedDuration,
+          suggestedBuffer: serviceData.suggestedBuffer || 0,
+          companyId: companyId,
+        };
+        const result = await ServiceAPI.createService(payload);
+        showSuccess("Servicio creado correctamente");
       }
+
       const updatedServices = await CompanyAPI.getCompanyServices(companyId);
+
       setServices(updatedServices);
+
       handleCloseServiceModal();
     } catch (err) {
-      setError(err?.response?.data?.message || 'Error al guardar el servicio');
+      console.error("ERROR en handleServiceSubmit:", err);
+      console.error("Respuesta del error:", err?.response);
+      console.error("Datos del error:", err?.response?.data);
+      setError(err?.response?.data?.message || "Error al guardar el servicio");
     }
   };
 
   const handleProvideSubmit = async (offeredServiceData) => {
     try {
       await OfferedServiceAPI.createOfferedService(offeredServiceData);
-      showSuccess('Servicio prestado correctamente');
+      showSuccess("Servicio prestado correctamente");
       handleCloseProvideModal();
     } catch (err) {
-      setError(err?.response?.data?.message || 'Error al prestar el servicio');
+      setError(err?.response?.data?.message || "Error al prestar el servicio");
     }
   };
 
   const renderLoadingSkeleton = () => (
     <Box
       sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
         gap: 2,
       }}
     >
@@ -233,18 +256,17 @@ const CompanyServicesTab = ({ companyId, canEdit, canProvide }) => {
           key={index}
           variant="rounded"
           height={220}
-          sx={{ borderRadius: 3, width: '100%' }}
+          sx={{ borderRadius: 3, width: "100%" }}
         />
       ))}
     </Box>
   );
 
-
   const renderServicesGrid = () => (
     <Box
       sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
         gap: 2,
       }}
     >
@@ -262,14 +284,13 @@ const CompanyServicesTab = ({ companyId, canEdit, canProvide }) => {
     </Box>
   );
 
-
   return (
     <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        direction={{ xs: "column", sm: "row" }}
         spacing={2}
         justifyContent="space-between"
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
         sx={{ mb: 3 }}
       >
         <Typography variant="h6" fontWeight={800}>
@@ -280,7 +301,7 @@ const CompanyServicesTab = ({ companyId, canEdit, canProvide }) => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleCreateService}
-            sx={{ whiteSpace: 'nowrap' }}
+            sx={{ whiteSpace: "nowrap" }}
           >
             Nuevo servicio
           </Button>
@@ -322,7 +343,7 @@ const CompanyServicesTab = ({ companyId, canEdit, canProvide }) => {
         open={!!successMessage}
         autoHideDuration={3000}
         onClose={() => setSuccessMessage(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={() => setSuccessMessage(null)}
